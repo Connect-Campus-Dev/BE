@@ -1,7 +1,7 @@
 package cc.connectcampus.connect_campus.crew
 
 import cc.connectcampus.connect_campus.domain.crew.domain.Story
-import cc.connectcampus.connect_campus.domain.crew.repository.storyRepository
+import cc.connectcampus.connect_campus.domain.crew.repository.StoryRepository
 import cc.connectcampus.connect_campus.domain.member.domain.Member
 import cc.connectcampus.connect_campus.domain.member.repository.memberRepository
 import org.junit.jupiter.api.Test
@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 @SpringBootTest
 class crewTest(
-    @Autowired val storyRepository: storyRepository,
+    @Autowired val storyRepository: StoryRepository,
     @Autowired val memberRepository: memberRepository,
 ) {
 

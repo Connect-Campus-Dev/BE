@@ -10,7 +10,7 @@ import org.assertj.core.api.Assertions.*
 import org.springframework.beans.factory.annotation.Autowired
 
 @SpringBootTest
-class crewTest(
+class CrewTest(
     @Autowired val storyRepository: StoryRepository,
     @Autowired val memberRepository: memberRepository,
 ) {

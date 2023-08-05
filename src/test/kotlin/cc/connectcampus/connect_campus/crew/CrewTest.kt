@@ -17,8 +17,8 @@ class CrewTest(
 
     @Test
     fun `Story Repository Basic Test`(){
-        val testMember = Member(
-            name="TestMember"
+        val testMember = Member.fixture(
+            nickname="TestMember"
         )
         memberRepository.save(testMember)
         val testStory = Story(

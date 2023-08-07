@@ -1,12 +1,9 @@
 package cc.connectcampus.connect_campus.domain.model
 
-import com.querydsl.core.types.Projections
-import com.querydsl.jpa.impl.JPAQueryFactory
 import jakarta.persistence.Column
 import jakarta.persistence.Embeddable
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotEmpty
-import org.springframework.stereotype.Component
 
 @Embeddable
 class Email(
@@ -20,5 +17,10 @@ class Email(
     }
     fun getId(): String {
         return value.split("@")[0]
+    }
+
+    fun isNotUnivEmail(): Boolean {
+        val regex = """^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.(ac\.kr|edu)$""".toRegex()
+        return !regex.matches(this.value)
     }
 }

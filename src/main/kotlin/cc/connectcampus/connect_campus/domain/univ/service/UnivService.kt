@@ -11,10 +11,7 @@ class SchoolService(
 ) {
     private val univCache: MutableMap<String, Univ> = mutableMapOf()
 
-
-    //애플리케이션 로드 시점에 학교 목록을 캐시메모리에 저장
-    //대부분의 기능에서 학교 이름이 자주 조회된다. DB 접근을 줄이기 위해 캐시메모리에 저장
-    //Redis로도 전환 고려
+    //애플리케이션 로드 시점에 학교 목록을 메모리에 올려두기
     @PostConstruct
     fun initializeSchoolCache() {
         univCache.putAll(univRepository.findAll().associateBy { it.emailDomain })

@@ -1,6 +1,7 @@
 package cc.connectcampus.connect_campus.domain.member.dto.request
 
 import cc.connectcampus.connect_campus.domain.member.domain.Gender
+import cc.connectcampus.connect_campus.domain.member.domain.Member
 import cc.connectcampus.connect_campus.domain.model.Email
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
@@ -13,8 +14,16 @@ data class SignupRequest(
     val email: Email,
     @field:NotBlank @field:Size(min = 8)
     val password: String,
-    @field:NotBlank
     val enrollYear: Int,
-    @field:NotBlank
     val gender: Gender,
-)
+) {
+    fun toMember(): Member {
+        return Member(
+            nickname = this.nickname,
+            email = this.email,
+            password = this.password,
+            enrollYear = this.enrollYear,
+            gender = this.gender,
+        )
+    }
+}

@@ -40,7 +40,7 @@ class Member(
     companion object {
         fun fixture(
             nickname: String = "TestMember",
-            email: Email = Email("example@example.com"),
+            email: Email = Email("moonman0429@ajou.ac.kr"),
             password: String = "password123",
             enrollYear: Int = 2023,
             profileImage: List<ProfileImage>? = null,

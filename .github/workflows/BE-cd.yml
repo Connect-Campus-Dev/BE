@@ -36,9 +36,7 @@ jobs:
       - name: Generate deployment package
         run: |
           mkdir -p deploy
-          cp build/libs/*.jar deploy/application.jar
-          cp Procfile deploy/Procfile
-          cd deploy && zip -r connect-campus-${{steps.current-time.outputs.formattedTime}}-${{github.sha}} .
+          cp build/libs/*.jar deploy/connect-campus-${{steps.current-time.outputs.formattedTime}}-${{github.sha}}.jar
 
       - name: Beanstalk Deploy
         uses: einaregilsson/beanstalk-deploy@v14
@@ -49,5 +47,5 @@ jobs:
           environment_name: ConnectCampus-env-dev
           version_label: connect-campus-${{steps.current-time.outputs.formattedTime}}-${{github.sha}}
           region: ap-northeast-2
-          deployment_package: deploy/connect-campus-${{steps.current-time.outputs.formattedTime}}-${{github.sha}}.zip
+          deployment_package: deploy/connect-campus-${{steps.current-time.outputs.formattedTime}}-${{github.sha}}.jar
           wait_for_environment_recovery: 30

@@ -1,1 +1,0 @@
-web: java -jar Connect_Campus.jar

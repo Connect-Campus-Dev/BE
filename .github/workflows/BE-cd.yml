@@ -45,8 +45,8 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application-name: "Connect Campus"
-          environment_name: "ConnectCampus-env-dev"
+          application-name: Connect Campus
+          environment_name: ConnectCampus-env-dev
           version_label: connect-campus-${{steps.current-time.outputs.formattedTime}}-${{github.sha}}
           region: ap-northeast-2
           deployment_package: deploy/connect-campus-${{steps.current-time.outputs.formattedTime}}-${{github.sha}}.zip

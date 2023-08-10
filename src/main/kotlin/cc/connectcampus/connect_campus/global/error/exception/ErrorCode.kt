@@ -27,4 +27,16 @@ enum class ErrorCode(
     INAPPROPRIATE_NICKNAME(400, "M007", "부적절한 닉네임이에요."),
     NOT_ALLOWED_NICKNAME_LENGTH(400, "M008", "닉네임은 2자 이상, 10자 이하여야 해요."),
     EMAIL_INVALID(400, "M009", "학교 이메일이 아니에요."),
+
+    // Crew
+    CREW_NOT_FOUND(400, "CR001", "존재하지 않는 크루에요."),
+    CREW_NAME_DUPLICATION(400, "CR002", "이미 사용중인 크루 이름이에요."),
+    CREW_DESCRIPTION_LENGTH_INVALID(400, "CR003", "크루 소개는 100자 이하여야 해요."),
+    CREW_NAME_INVALID(400, "CR004", "크루 이름이 부적절해요."),
+    CREW_TAG_INVALID(400, "CR005", "크루 태그가 부적절해요."),
+    CREW_NAME_LENGTH_INVALID(400, "CR006", "크루 이름은 2자 이상, 10자 이하여야 해요."),
+    CREW_TAG_LENGTH_INVALID(400, "CR007", "크루 태그는 2자 이상, 10자 이하여야 해요."),
+    CREW_TAG_COUNT_INVALID(400,"CR008", "크루 태그는 1개 이상, 5개 이하여야 해요."),
+    CREW_TAG_DUPLICATION(400, "CR009", "크루 태그가 중복되었어요."),
+    CREW_MEMBER_JOINED(400, "CR010", "이미 가입한 크루에요."),
 }

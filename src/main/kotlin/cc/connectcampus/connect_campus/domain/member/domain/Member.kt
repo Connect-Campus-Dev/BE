@@ -1,5 +1,6 @@
 package cc.connectcampus.connect_campus.domain.member.domain
 
+import cc.connectcampus.connect_campus.domain.crew.domain.CrewMember
 import cc.connectcampus.connect_campus.domain.member.domain.Gender.*
 import cc.connectcampus.connect_campus.domain.model.Email
 import jakarta.persistence.*
@@ -36,6 +37,9 @@ class Member(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID ?= null,
+
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL])
+    val joinedCrew: MutableList<CrewMember> = mutableListOf(),
 ) {
     companion object {
         fun fixture(
@@ -50,6 +54,5 @@ class Member(
         ): Member {
             return Member(nickname, email, password, enrollYear, profileImage, gender, createdAt, id)
         }
-
     }
 }

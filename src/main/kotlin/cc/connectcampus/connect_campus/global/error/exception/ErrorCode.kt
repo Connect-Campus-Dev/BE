@@ -39,4 +39,9 @@ enum class ErrorCode(
     CREW_TAG_COUNT_INVALID(400,"CR008", "크루 태그는 1개 이상, 5개 이하여야 해요."),
     CREW_TAG_DUPLICATION(400, "CR009", "크루 태그가 중복되었어요."),
     CREW_MEMBER_JOINED(400, "CR010", "이미 가입한 크루에요."),
+
+    // Attachment
+    INVALID_FILE_INPUT(400, "A001", "잘못된 파일이에요."),
+    INVALID_FILE_TYPE(400, "A002", "잘못된 파일 형식이에요."),
+    UPLOAD_FAIL(400, "A003", "파일 업로드에 실패했어요."),
 }

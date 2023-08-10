@@ -3,44 +3,55 @@ package cc.connectcampus.connect_campus.domain.crew.service
 import cc.connectcampus.connect_campus.domain.crew.domain.Crew
 import cc.connectcampus.connect_campus.domain.crew.domain.CrewMember
 import cc.connectcampus.connect_campus.domain.crew.domain.CrewTag
-import cc.connectcampus.connect_campus.domain.crew.dto.request.CrewEnrollRequest
+import cc.connectcampus.connect_campus.domain.crew.dto.request.CrewCreationRequest
 import cc.connectcampus.connect_campus.domain.crew.exception.*
 import cc.connectcampus.connect_campus.domain.crew.repository.CrewMemberRepository
 import cc.connectcampus.connect_campus.domain.crew.repository.CrewRepository
 import cc.connectcampus.connect_campus.domain.crew.repository.CrewTagRepository
 import cc.connectcampus.connect_campus.domain.member.domain.Member
+import cc.connectcampus.connect_campus.domain.member.repository.MemberRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 class CrewServiceV0(
     val crewRepository: CrewRepository,
     val crewTagRepository: CrewTagRepository,
     val crewMemberRepository: CrewMemberRepository,
+    val memberRepository: MemberRepository,
 ): CrewService{
     @Transactional
-    override fun enroll(crewEnrollRequest: CrewEnrollRequest): Crew {
-        // Crew Name Length & Duplicate Check
-        if(crewEnrollRequest.name.length<2 || crewEnrollRequest.name.length>10) throw CrewNameLengthException()
-        if(crewRepository.existsByName(crewEnrollRequest.name)) throw CrewNameDuplicateException()
-        
-        // Crew Description Length Check
-        if(crewEnrollRequest.description.length>100) throw CrewDescriptionException()
+    override fun create(crewCreationRequest: CrewCreationRequest): Crew {
+        // Crew Name Duplicate Check
+        if(crewRepository.existsByName(crewCreationRequest.name)) throw CrewNameDuplicateException()
 
-        val enrollCrew = Crew(
-            name = crewEnrollRequest.name,
-            description = crewEnrollRequest.description,
-            admin = crewEnrollRequest.admin,
-            tags = TagToEntity(crewEnrollRequest.tags),
+        val requestedAdmin: Member = memberRepository.findById(crewCreationRequest.adminId)
+        val creationCrew = Crew(
+            name = crewCreationRequest.name,
+            description = crewCreationRequest.description,
+            admin = requestedAdmin,
+            tags = TagToEntity(crewCreationRequest.tags),
         )
-        crewRepository.save(enrollCrew)
+        val createdCrew = crewRepository.save(creationCrew)
 
-        joinCrew(enrollCrew, crewEnrollRequest.admin)
-        return enrollCrew
+        join(createdCrew.id!!, requestedAdmin.id!!)
+        return createdCrew
     }
 
-    override fun joinCrew(crew: Crew, member: Member): Crew {
+    @Transactional
+    override fun join(crewId: UUID, memberId: UUID): Crew {
+        // Crew Existence Check
+        if(crewRepository.notExistsById(crewId)) throw CrewNotFoundException()
+
+        val crew = crewRepository.findById(crewId)
+        val member = memberRepository.findById(memberId)
+
+        // Member Joined Crew Check
+        if(crewMemberRepository.existsByCrewIdAndMemberId(crewId,memberId)) throw CrewMemberJoinedException()
+
         val crewMember = crewMemberRepository.save(CrewMember(crew = crew, member = member))
+
         crew.members.add(crewMember)
         member.joinedCrew.add(crewMember)
 

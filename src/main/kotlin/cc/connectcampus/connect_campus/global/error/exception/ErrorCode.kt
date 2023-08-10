@@ -38,4 +38,5 @@ enum class ErrorCode(
     CREW_TAG_LENGTH_INVALID(400, "CR007", "크루 태그는 2자 이상, 10자 이하여야 해요."),
     CREW_TAG_COUNT_INVALID(400,"CR008", "크루 태그는 1개 이상, 5개 이하여야 해요."),
     CREW_TAG_DUPLICATION(400, "CR009", "크루 태그가 중복되었어요."),
+    CREW_MEMBER_JOINED(400, "CR010", "이미 가입한 크루에요."),
 }

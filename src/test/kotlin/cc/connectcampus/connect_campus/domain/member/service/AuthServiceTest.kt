@@ -26,7 +26,7 @@ import java.time.LocalDateTime
 
 @SpringBootTest
 class AuthServiceTest @Autowired constructor(
-    private val authService: AuthServiceV0,
+    private val authService: AuthService,
     private val emailVerificationService: EmailVerificationService,
     private val codeGenerator: CodeGenerator,
     private val emailVerificationRepository: EmailVerificationRepository

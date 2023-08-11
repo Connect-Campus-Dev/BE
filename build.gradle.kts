@@ -58,6 +58,9 @@ dependencies {
     //spring security
 //    implementation("org.springframework.boot:spring-boot-starter-security")
 //    implementation("io.jsonwebtoken:jjwt:0.9.1")
+
+    // aws
+    implementation("io.awspring.cloud:spring-cloud-starter-aws:2.3.1")
 }
 
 tasks.withType<KotlinCompile> {

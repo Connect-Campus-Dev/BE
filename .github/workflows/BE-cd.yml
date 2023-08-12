@@ -27,6 +27,11 @@ jobs:
           echo "${{ secrets.DEV_APPLICATION_PROPERTIES }}" > src/main/resources/application-dev.properties
         shell: bash
 
+      - name: set application-aws.properties
+        run: |
+          echo "${{ secrets.AWS_APPLICATION_PROPERTIES }}" > src/main/resources/application-aws.properties
+        shell: bash
+
       - name: Build with Gradle
         run: ./gradlew clean build -Dspring.profiles.active=dev
         shell: bash

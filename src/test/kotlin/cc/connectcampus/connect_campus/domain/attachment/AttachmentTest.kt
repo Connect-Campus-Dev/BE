@@ -1,6 +1,5 @@
 package cc.connectcampus.connect_campus.domain.attachment
 
-import cc.connectcampus.connect_campus.domain.attachment.service.AttachmentService
 import cc.connectcampus.connect_campus.domain.member.domain.Member
 import cc.connectcampus.connect_campus.domain.member.repository.MemberRepository
 import cc.connectcampus.connect_campus.domain.model.Email
@@ -19,7 +18,6 @@ import java.io.File
 @AutoConfigureMockMvc
 class AttachmentTest(
     @Autowired val memberRepository: MemberRepository,
-    @Autowired val attachmentService: AttachmentService,
     @Autowired val mockMvc: MockMvc,
 ) {
     lateinit var testUser: Member
@@ -29,11 +27,11 @@ class AttachmentTest(
             nickname = "testUser",
             email = Email("ho7221@korea.ac.kr"),
         )
-        memberRepository.save(testUser)
     }
 
     @Test
     fun `File Upload Test`() {
+        memberRepository.save(testUser)
         val file = File("src/test/resources/test_profile.png")
         val multipartFile = MockMultipartFile(
             "file",

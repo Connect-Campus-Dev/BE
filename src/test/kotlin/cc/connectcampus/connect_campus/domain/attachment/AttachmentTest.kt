@@ -34,7 +34,7 @@ class AttachmentTest(
 
     @Test
     fun `File Upload Test`() {
-        val file = File("src/test/resources/profile.jpg")
+        val file = File("src/test/resources/test_profile.jpg")
         val multipartFile = MockMultipartFile(
             "file",
             file.name,

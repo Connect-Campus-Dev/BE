@@ -12,6 +12,7 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.transaction.annotation.Transactional
 import java.io.File
 
 @SpringBootTest
@@ -30,6 +31,7 @@ class AttachmentTest(
     }
 
     @Test
+    @Transactional
     fun `File Upload Test`() {
         memberRepository.save(testUser)
         val file = File("src/test/resources/test_profile.png")

@@ -79,6 +79,7 @@ class SecurityConfig(
         val source = UrlBasedCorsConfigurationSource()
         val config = CorsConfiguration()
         config.addAllowedOrigin("http://localhost:5173")
+        config.addAllowedOrigin("https://connect-campus.cc")
         config.addAllowedHeader("*")
         config.addAllowedMethod("*")
         config.exposedHeaders = listOf("Authorization")

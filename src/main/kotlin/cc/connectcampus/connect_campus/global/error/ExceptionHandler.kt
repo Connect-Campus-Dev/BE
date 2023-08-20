@@ -4,6 +4,7 @@ import cc.connectcampus.connect_campus.global.error.exception.BusinessException
 import cc.connectcampus.connect_campus.global.error.exception.ErrorCode
 import cc.connectcampus.connect_campus.global.error.exception.InvalidValueException
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.HttpRequestMethodNotSupportedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -38,6 +39,13 @@ class ExceptionHandler {
         val errorResponse = ErrorCode.INVALID_TYPE_VALUE
         return ResponseEntity.status(errorResponse.status).body(errorResponse)
     }
+
+    @ExceptionHandler(BadCredentialsException::class)
+    fun handleBadCredentialsException(e: BadCredentialsException): ResponseEntity<ErrorCode> {
+        val errorResponse = ErrorCode.LOGIN_INPUT_INVALID
+        return ResponseEntity.status(errorResponse.status).body(errorResponse)
+    }
+
     @ExceptionHandler(BindException::class)
     fun handleBindException(e: BindException): ResponseEntity<ErrorCode> {
         val errorResponse = ErrorCode.INVALID_TYPE_VALUE

@@ -16,6 +16,8 @@ enum class ErrorCode(
     INVALID_TYPE_VALUE(400, "C005", "잘못된 타입이에요."),
     HANDLE_ACCESS_DENIED(403, "C006", "권한이 없어요."),
     NOT_VERIFIED(403, "C007", "인증되지 않은 사용자에요."),
+    INVALID_TOKEN(401, "C008", "유효하지 않은 토큰이에요."),
+    TOKEN_EXPIRED(401, "C009", "만료된 토큰이에요."),
 
     // Member, Auth
     EMAIL_DUPLICATION(400, "M001", "이미 사용중인 이메일이에요."),
@@ -28,6 +30,7 @@ enum class ErrorCode(
     NOT_ALLOWED_NICKNAME_LENGTH(400, "M008", "닉네임은 2자 이상, 10자 이하여야 해요."),
     EMAIL_INVALID(400, "M009", "학교 이메일이 아니에요."),
 
+
     // Crew
     CREW_NOT_FOUND(400, "CR001", "존재하지 않는 크루에요."),
     CREW_NAME_DUPLICATION(400, "CR002", "이미 사용중인 크루 이름이에요."),
@@ -38,4 +41,9 @@ enum class ErrorCode(
     CREW_TAG_LENGTH_INVALID(400, "CR007", "크루 태그는 2자 이상, 10자 이하여야 해요."),
     CREW_TAG_COUNT_INVALID(400,"CR008", "크루 태그는 1개 이상, 5개 이하여야 해요."),
     CREW_TAG_DUPLICATION(400, "CR009", "크루 태그가 중복되었어요."),
+
+
+    // Chat
+    CHAT_NOT_FOUND(400, "CH001", "존재하지 않는 채팅방이에요."),
+    NOT_JOINED_CHAT(400, "CH002", "허용되지 않은 사용자에요."),
 }

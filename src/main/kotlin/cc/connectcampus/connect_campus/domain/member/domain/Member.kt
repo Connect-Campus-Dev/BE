@@ -1,10 +1,10 @@
 package cc.connectcampus.connect_campus.domain.member.domain
 
+import cc.connectcampus.connect_campus.domain.chat.domain.ChatMember
 import cc.connectcampus.connect_campus.domain.crew.domain.CrewMember
 import cc.connectcampus.connect_campus.domain.member.domain.Gender.*
 import cc.connectcampus.connect_campus.domain.model.Email
 import jakarta.persistence.*
-import lombok.EqualsAndHashCode
 import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDateTime
 import java.util.*
@@ -21,7 +21,7 @@ class Member(
     )
     val email: Email,
 
-    val password: String,
+    var password: String,
     val enrollYear: Int,
 
     @OneToMany(cascade = [CascadeType.ALL], mappedBy = "member", orphanRemoval = true)
@@ -34,13 +34,20 @@ class Member(
     @Column(name = "created_at",  updatable = false)
     val createdAt: LocalDateTime? = null,
 
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL])
+    val joinedCrew: MutableList<CrewMember> = mutableListOf(),
+
+    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL])
+    val joinedChat: MutableList<ChatMember> = mutableListOf(),
+
+    @Enumerated(EnumType.STRING)
+    val role: Role,
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID ?= null,
 
-    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL])
-    val joinedCrew: MutableList<CrewMember> = mutableListOf(),
-) {
+    ) {
     companion object {
         fun fixture(
             nickname: String = "TestMember",
@@ -50,9 +57,12 @@ class Member(
             profileImage: List<ProfileImage>? = null,
             gender: Gender = MALE,
             createdAt: LocalDateTime = LocalDateTime.now(),
+            joinedCrew: MutableList<CrewMember> = mutableListOf(),
+            joinedChat: MutableList<ChatMember> = mutableListOf(),
+            role: Role = Role.MEMBER,
             id: UUID? = null,
         ): Member {
-            return Member(nickname, email, password, enrollYear, profileImage, gender, createdAt, id)
+            return Member(nickname, email, password, enrollYear, profileImage, gender, createdAt, joinedCrew, joinedChat, role, id)
         }
     }
 }

@@ -5,6 +5,7 @@ import cc.connectcampus.connect_campus.domain.chat.domain.ChatMember
 import cc.connectcampus.connect_campus.domain.chat.domain.ChatType
 import cc.connectcampus.connect_campus.domain.chat.dto.ChatCreationRequest
 import cc.connectcampus.connect_campus.domain.chat.repository.ChatMemberRepository
+import cc.connectcampus.connect_campus.domain.chat.repository.ChatQuerydslRepository
 import cc.connectcampus.connect_campus.domain.chat.repository.ChatRepository
 import cc.connectcampus.connect_campus.domain.member.domain.CustomUser
 import cc.connectcampus.connect_campus.domain.member.repository.MemberRepository
@@ -19,6 +20,7 @@ class ChatServiceImpl(
     private val chatRepository: ChatRepository,
     private val chatMemberRepository: ChatMemberRepository,
     private val memberRepository: MemberRepository,
+    private val chatQuerydslRepository: ChatQuerydslRepository,
 ): ChatService {
 
     override fun createChat(chatCreationRequest: ChatCreationRequest): Chat {
@@ -40,8 +42,11 @@ class ChatServiceImpl(
         return chat
     }
 
+    override fun getChatsForMember(name: String): List<ChatMember> {
+        return chatQuerydslRepository.chats(UUID.fromString(name))
+    }
 
-//    override fun getMessages(chatId: String) {
+    //    override fun getMessages(chatId: String) {
 //        return chatRepository.findById(chatId)
 //    }
 }

@@ -10,6 +10,7 @@ import org.springframework.messaging.MessageChannel
 import org.springframework.messaging.simp.stomp.StompCommand
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.messaging.support.ChannelInterceptor
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -25,19 +26,34 @@ class StompHandler(
         val accessor = StompHeaderAccessor.wrap(message)
 
         if (accessor.command == StompCommand.CONNECT || accessor.command == StompCommand.SUBSCRIBE || accessor.command == StompCommand.SEND) {
+            logger.info(accessor.command.toString())
+            logger.info(accessor.destination.toString())
+            logger.info(accessor.getFirstNativeHeader("Authorization"))
+
             val token = accessor.getFirstNativeHeader("Authorization")
                 ?.takeIf { it.startsWith("Bearer") }
                 ?.substring(7)
                 ?: throw InvalidTokenException()
 
-            if (!tokenProvider.validateToken(token)) throw InvalidTokenException()
+            logger.info("token: $token")
 
-            if (accessor.command != StompCommand.CONNECT) {
-                logger.info("accessor.command: ${accessor.command}")
-                val authentication = tokenProvider.getAuthentication(token)
+            if (!tokenProvider.validateToken(token)) throw InvalidTokenException()
+            val authentication = tokenProvider.getAuthentication(token)
+
+            logger.info("authentication: $authentication")
+            SecurityContextHolder.getContext().authentication = authentication
+            accessor.user = authentication
+
+            if (accessor.command == StompCommand.SUBSCRIBE && accessor.destination?.startsWith("/user/queue/chats") == false) {
+                logger.info("Hello! ${accessor.destination}")
+
+
                 val userId = (authentication.principal as? CustomUser)?.id ?: throw InvalidTokenException()
                 val chatId = UUID.fromString(accessor.destination?.split("/")?.last()) ?: throw EntityNotFoundException()
                 verifyChatSubscription(userId, chatId)
+            }
+            if(accessor.command == StompCommand.SEND) {
+                logger.info(accessor.destination.toString())
             }
         }
 

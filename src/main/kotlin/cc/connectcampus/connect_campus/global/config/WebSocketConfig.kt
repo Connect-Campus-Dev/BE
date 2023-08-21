@@ -1,6 +1,7 @@
 package cc.connectcampus.connect_campus.global.config
 
 import cc.connectcampus.connect_campus.global.config.security.StompHandler
+import cc.connectcampus.connect_campus.global.config.security.StompHandshakeHandler
 import lombok.extern.slf4j.Slf4j
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
@@ -17,16 +18,18 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Slf4j
 class WebSocketConfig(
     private val stompHandler: StompHandler,
+    private val stompHandshakeHandler: StompHandshakeHandler,
 ) : WebSocketMessageBrokerConfigurer {
 
     private val logger = org.slf4j.LoggerFactory.getLogger(this::class.java)!!
 
     override fun configureMessageBroker(config: MessageBrokerRegistry) {
-        // /app으로 시작되는 메시지는 컨트롤러의 @MessageMapping으로 라우팅 된다
+        // /app, /user으로 시작되는 메시지는 컨트롤러의 @MessageMapping으로 라우팅 된다
         config.setApplicationDestinationPrefixes("/app")
+        config.setUserDestinationPrefix("/user")
 
         //topic으로 시작하는 메시지는 메시지 브로커로 라우팅 된다
-        config.enableStompBrokerRelay("/topic")
+        config.enableStompBrokerRelay("/topic", "/queue")
             .setRelayHost("localhost")
             .setRelayPort(61613)
     }
@@ -35,16 +38,14 @@ class WebSocketConfig(
         // /chat으로 stomp 연결을 맺는다
         registry
             //todo: setAllowedOrigins("*")는 보안상 좋지 않다. 추후 수정 필요
-            //todo: WebSocketErrorHandler()는 에러 핸들러 추가 필요
+            //todo: WebSocketErrorHandler() 에러 핸들러 추가 필요
 //            .setErrorHandler(WebSocketErrorHandler())
             .addEndpoint("/chat")
             .setAllowedOrigins("*")
+//            .addInterceptors(stompHandshakeHandler)
     }
 
-    //처음 채널 연결 시 동작? 확인 필요
     override fun configureClientInboundChannel(registration: ChannelRegistration) {
         registration.interceptors(stompHandler) // 인터셉터 추가
     }
-
-
 }

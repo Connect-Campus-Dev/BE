@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
+import org.springframework.security.authorization.AuthorizationManager
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.annotation.web.socket.EnableWebSocketSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.factory.PasswordEncoderFactories
@@ -63,6 +65,7 @@ class SecurityConfig(
                     .requestMatchers(AntPathRequestMatcher("/topic/**")).permitAll()
                     .requestMatchers(AntPathRequestMatcher("/app/**")).permitAll()
                     .requestMatchers(AntPathRequestMatcher("/chat/**")).permitAll()
+                    .requestMatchers(AntPathRequestMatcher("/user/**")).permitAll()
                     .anyRequest().authenticated()
             }
             .addFilter(corsFilter())
@@ -79,6 +82,7 @@ class SecurityConfig(
         val source = UrlBasedCorsConfigurationSource()
         val config = CorsConfiguration()
         config.addAllowedOrigin("http://localhost:5173")
+        config.addAllowedOrigin("http://192.168.0.5:5173")
         config.addAllowedOrigin("https://connect-campus.cc")
         config.addAllowedHeader("*")
         config.addAllowedMethod("*")

@@ -45,6 +45,7 @@ class AuthServiceV0(
         val authenticationToken = UsernamePasswordAuthenticationToken(loginRequest.email.value, loginRequest.password)
         //AuthenticationManager는 DaoAuthenticationProvider를 통해 인증을 진행한다.
         //DaoAuthenticationProvider는 UserDetailsService를 통해 유저 정보를 검증하고, Authentication을 반환한다.
+        //이후 입력받은 password와 DB에 저장된 password를 비교한다.
         val authentication = authenticationManagerBuilder.`object`.authenticate(authenticationToken)
 
         return jwtTokenProvider.createToken(authentication)

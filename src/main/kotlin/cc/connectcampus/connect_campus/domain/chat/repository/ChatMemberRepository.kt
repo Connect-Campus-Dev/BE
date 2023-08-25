@@ -8,4 +8,5 @@ import java.util.UUID
 
 interface ChatMemberRepository: JpaRepository<ChatMember, UUID> {
     fun findAllByMember(member: Member): List<ChatMember>?
+    fun findAllByMemberId(memberId: UUID): List<ChatMember?>
 }

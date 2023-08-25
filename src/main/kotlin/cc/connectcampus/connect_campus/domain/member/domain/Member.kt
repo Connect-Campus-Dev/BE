@@ -37,8 +37,8 @@ class Member(
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL])
     val joinedCrew: MutableList<CrewMember> = mutableListOf(),
 
-    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL])
-    val joinedChat: MutableList<ChatMember> = mutableListOf(),
+//    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL])
+//    val joinedChat: MutableList<ChatMember> = mutableListOf(),
 
     @Enumerated(EnumType.STRING)
     val role: Role,
@@ -62,7 +62,7 @@ class Member(
             role: Role = Role.MEMBER,
             id: UUID? = null,
         ): Member {
-            return Member(nickname, email, password, enrollYear, profileImage, gender, createdAt, joinedCrew, joinedChat, role, id)
+            return Member(nickname, email, password, enrollYear, profileImage, gender, createdAt, joinedCrew, role, id)
         }
     }
 }

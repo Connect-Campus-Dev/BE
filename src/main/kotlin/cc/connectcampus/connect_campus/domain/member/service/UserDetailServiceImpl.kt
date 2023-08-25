@@ -31,6 +31,7 @@ class UserDetailServiceImpl(
     private fun createUserDetails(member: Member): UserDetails {
         return CustomUser(
             id = member.id,
+            nickname = member.nickname,
             email = member.email.value,
             password = member.password,
             //한 유저는 단일 권한을 가진다. 만약 여러 권한을 가질 경우 map으로 변환하여 처리

@@ -6,6 +6,7 @@ import java.util.*
 
 class CustomUser(
     val id: UUID?,
+    val nickname: String?,
     email: String,
     password: String,
     authorities: Collection<GrantedAuthority>,

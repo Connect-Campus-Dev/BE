@@ -41,6 +41,7 @@ class JwtTokenProvider {
             .setSubject(authentication.name)
             .claim("auth", authorities)
             .claim("userId", (authentication.principal as CustomUser).id)
+            .claim("nickname", (authentication.principal as CustomUser).nickname)
             .setIssuedAt(now)
             .setExpiration(accessExpiration)
             .signWith(key, SignatureAlgorithm.HS256)
@@ -53,19 +54,22 @@ class JwtTokenProvider {
     fun getAuthentication(token: String): Authentication {
         val claims: Claims = getClaims(token)
 
-        //claim에 userId 추가 필요
-        //이외에도 claim에 추가할 정보가 있으면 추가
         val auth = claims["auth"] ?: throw InvalidTokenException()
 
-        //userId를 UUID로 변환
         val userId = claims["userId"] ?: throw InvalidTokenException()
+        val nickname = claims["nickname"] ?: throw InvalidTokenException()
 
         val authorities: Collection<GrantedAuthority> = (auth as String)
             .split(",")
             .map { SimpleGrantedAuthority(it) }
 
-        val principal: UserDetails = CustomUser(UUID.fromString(userId as String), claims.subject, "", authorities)
-
+        val principal: UserDetails = CustomUser(
+            id = UUID.fromString(userId as String),
+            nickname = nickname as String,
+            email = claims.subject,
+            password = "",
+            authorities = authorities
+        )
 
         return UsernamePasswordAuthenticationToken(principal, "", authorities)
     }

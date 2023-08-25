@@ -1,7 +1,6 @@
 package cc.connectcampus.connect_campus.global.config
 
 import cc.connectcampus.connect_campus.global.config.security.StompHandler
-import cc.connectcampus.connect_campus.global.config.security.StompHandshakeHandler
 import lombok.extern.slf4j.Slf4j
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.Ordered
@@ -18,7 +17,6 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Slf4j
 class WebSocketConfig(
     private val stompHandler: StompHandler,
-    private val stompHandshakeHandler: StompHandshakeHandler,
 ) : WebSocketMessageBrokerConfigurer {
 
     private val logger = org.slf4j.LoggerFactory.getLogger(this::class.java)!!

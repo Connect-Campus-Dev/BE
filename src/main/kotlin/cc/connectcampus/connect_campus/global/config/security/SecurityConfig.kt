@@ -90,5 +90,4 @@ class SecurityConfig(
         source.registerCorsConfiguration("/**", config)
         return CorsFilter(source)
     }
-
 }

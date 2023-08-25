@@ -10,9 +10,11 @@ import org.springframework.messaging.MessageChannel
 import org.springframework.messaging.simp.stomp.StompCommand
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor
 import org.springframework.messaging.support.ChannelInterceptor
+import org.springframework.messaging.support.MessageHeaderAccessor
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import java.util.*
+
 
 @Slf4j
 @Component
@@ -23,12 +25,13 @@ class StompHandler(
 
     private val logger = org.slf4j.LoggerFactory.getLogger(this::class.java)!!
     override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
-        val accessor = StompHeaderAccessor.wrap(message)
+        val accessor = MessageHeaderAccessor
+            .getAccessor(message, StompHeaderAccessor::class.java) ?: throw InvalidTokenException()
 
         if (accessor.command == StompCommand.CONNECT || accessor.command == StompCommand.SUBSCRIBE || accessor.command == StompCommand.SEND) {
-            logger.info(accessor.command.toString())
-            logger.info(accessor.destination.toString())
-            logger.info(accessor.getFirstNativeHeader("Authorization"))
+            logger.info("===============================")
+            logger.info("command: ${accessor.command.toString()}")
+            logger.info("destination: ${accessor.destination.toString()}")
 
             val token = accessor.getFirstNativeHeader("Authorization")
                 ?.takeIf { it.startsWith("Bearer") }
@@ -44,16 +47,17 @@ class StompHandler(
             SecurityContextHolder.getContext().authentication = authentication
             accessor.user = authentication
 
-            if (accessor.command == StompCommand.SUBSCRIBE && accessor.destination?.startsWith("/user/queue/chats") == false) {
+            //채팅방을 구독하는 경우, 해당 채팅방에 가입되어있는지 확인한다.
+            //채팅방에 메시지를 보내는 경우, 해당 채팅방에 가입되어있는지 확인한다.
+            if ((accessor.command == StompCommand.SUBSCRIBE && accessor.destination?.startsWith("/user/queue/chats") == false) ||
+                (accessor.command == StompCommand.SEND && accessor.destination?.startsWith("/app/getChats") == false)) {
                 logger.info("Hello! ${accessor.destination}")
-
-
                 val userId = (authentication.principal as? CustomUser)?.id ?: throw InvalidTokenException()
                 val chatId = UUID.fromString(accessor.destination?.split("/")?.last()) ?: throw EntityNotFoundException()
                 verifyChatSubscription(userId, chatId)
             }
             if(accessor.command == StompCommand.SEND) {
-                logger.info(accessor.destination.toString())
+                logger.info("Send!")
             }
         }
 

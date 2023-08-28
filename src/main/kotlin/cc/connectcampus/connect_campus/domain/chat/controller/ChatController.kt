@@ -42,8 +42,11 @@ class ChatController(
     // 유저가 처음 연결되면 호출되는 메서드
     // @SendToUser 어노테이션을 사용할 때 Spring은 현재 인증된 사용자의 세션을 자동으로 식별한다.
     // 해당 세션에 연결된 클라이언트에게만 메시지를 전송한다.
+
+    //todo: StickySession 적용시 문제는 없지만, 만약 StickySession 적용을 안한다면, MQ에 메시지를 넣고, 큐 리스터를 만들어서 처리해야함.
+    //todo: --> 따라서 StickySession은 일단 적용하자.
     @MessageMapping("/getChats")
-    @SendToUser("/queue/chats")
+    @SendToUser("/queue/private")
     fun getChats(authentication: Authentication): List<MessageRecordResponse?> {
 
         logger.info("===========ChatController===========")

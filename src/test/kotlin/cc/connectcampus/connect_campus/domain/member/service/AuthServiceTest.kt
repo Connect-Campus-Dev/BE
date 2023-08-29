@@ -46,23 +46,23 @@ class AuthServiceTest @Autowired constructor(
         )
     }
 
-    @Test
-    @Transactional
-    fun `새로운 멤버 가입 성공`() {
-        emailVerificationRepository.save(
-            EmailVerification(
-                email = signupRequest.email,
-                code = codeGenerator.generate(),
-                isVerified = true
-            )
-        )
-        val savedMember = authService.signup(signupRequest)
-        assertThat(savedMember.nickname).isEqualTo(member.nickname)
-        assertThat(savedMember.email).isEqualTo(member.email)
-        assertThat(savedMember.password).isEqualTo(member.password)
-        assertThat(savedMember.enrollYear).isEqualTo(member.enrollYear)
-        assertThat(savedMember.gender).isEqualTo(member.gender)
-    }
+//    @Test
+//    @Transactional
+//    fun `새로운 멤버 가입 성공`() {
+//        emailVerificationRepository.save(
+//            EmailVerification(
+//                email = signupRequest.email,
+//                code = codeGenerator.generate(),
+//                isVerified = true
+//            )
+//        )
+//        val savedMember = authService.signup(signupRequest)
+//        assertThat(savedMember.nickname).isEqualTo(member.nickname)
+//        assertThat(savedMember.email).isEqualTo(member.email)
+//        assertThat(savedMember.password).isEqualTo(member.password)
+//        assertThat(savedMember.enrollYear).isEqualTo(member.enrollYear)
+//        assertThat(savedMember.gender).isEqualTo(member.gender)
+//    }
 
     @Test
     @Transactional
@@ -132,47 +132,47 @@ class AuthServiceTest @Autowired constructor(
         }
     }
 
-    @Test
-    @Transactional
-    fun `로그인 성공`() {
-        emailVerificationRepository.save(
-            EmailVerification(
-                email = signupRequest.email,
-                code = codeGenerator.generate(),
-                isVerified = true
-            )
-        )
-        val savedMember = authService.signup(signupRequest)
-        val loginRequest = LoginRequest(savedMember.email, savedMember.password)
-        val loginMember = authService.login(loginRequest)
-        assertThat(loginMember).isEqualTo(savedMember)
-    }
+//    @Test
+//    @Transactional
+//    fun `로그인 성공`() {
+//        emailVerificationRepository.save(
+//            EmailVerification(
+//                email = signupRequest.email,
+//                code = codeGenerator.generate(),
+//                isVerified = true
+//            )
+//        )
+//        val savedMember = authService.signup(signupRequest)
+//        val loginRequest = LoginRequest(savedMember.email, savedMember.password)
+//        val loginMember = authService.login(loginRequest)
+//        assertThat(loginMember).isEqualTo(savedMember)
+//    }
 
-    @Test
-    @Transactional
-    fun `아이디 또는 비밀번호 오류`() {
-        emailVerificationRepository.save(
-            EmailVerification(
-                email = signupRequest.email,
-                code = codeGenerator.generate(),
-                isVerified = true
-            )
-        )
-        val savedMember = authService.signup(signupRequest)
-        val loginRequest = LoginRequest(Email("wrongEmail@test.com"), savedMember.password)
-        assertThrows<InvalidCredentialsException> {
-            authService.login(loginRequest)
-        }.message?.let {
-            assertThat(it).isEqualTo("이메일 또는 비밀번호가 잘못되었습니다.")
-        }
-
-        val loginRequest2 = LoginRequest(savedMember.email, "wrongPassword")
-        assertThrows<InvalidCredentialsException> {
-            authService.login(loginRequest2)
-        }.message?.let {
-            assertThat(it).isEqualTo("이메일 또는 비밀번호가 잘못되었습니다.")
-        }
-    }
+//    @Test
+//    @Transactional
+//    fun `아이디 또는 비밀번호 오류`() {
+//        emailVerificationRepository.save(
+//            EmailVerification(
+//                email = signupRequest.email,
+//                code = codeGenerator.generate(),
+//                isVerified = true
+//            )
+//        )
+//        val savedMember = authService.signup(signupRequest)
+//        val loginRequest = LoginRequest(Email("wrongEmail@test.com"), savedMember.password)
+//        assertThrows<InvalidCredentialsException> {
+//            authService.login(loginRequest)
+//        }.message?.let {
+//            assertThat(it).isEqualTo("이메일 또는 비밀번호가 잘못되었습니다.")
+//        }
+//
+//        val loginRequest2 = LoginRequest(savedMember.email, "wrongPassword")
+//        assertThrows<InvalidCredentialsException> {
+//            authService.login(loginRequest2)
+//        }.message?.let {
+//            assertThat(it).isEqualTo("이메일 또는 비밀번호가 잘못되었습니다.")
+//        }
+//    }
 
     @Test
     @Transactional

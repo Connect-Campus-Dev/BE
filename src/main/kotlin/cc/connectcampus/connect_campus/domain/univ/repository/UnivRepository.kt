@@ -6,4 +6,6 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface UnivRepository: JpaRepository<Univ, Long> {
+    fun findByEmailDomain(emailDomain: String) : Univ?
+    fun findByName(name: String) : Univ?
 }

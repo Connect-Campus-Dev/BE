@@ -9,6 +9,7 @@ import cc.connectcampus.connect_campus.domain.crew.repository.CrewMemberReposito
 import cc.connectcampus.connect_campus.domain.crew.repository.CrewRepository
 import cc.connectcampus.connect_campus.domain.crew.repository.CrewTagRepository
 import cc.connectcampus.connect_campus.domain.member.domain.Member
+import cc.connectcampus.connect_campus.domain.member.exception.MemberNotFoundException
 import cc.connectcampus.connect_campus.domain.member.repository.MemberRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -27,6 +28,7 @@ class CrewServiceV0(
         if(crewRepository.existsByName(crewCreationRequest.name)) throw CrewNameDuplicateException()
 
         val requestedAdmin: Member = memberRepository.findById(crewCreationRequest.adminId)
+            ?: throw MemberNotFoundException()
         val creationCrew = Crew(
             name = crewCreationRequest.name,
             description = crewCreationRequest.description,
@@ -46,6 +48,7 @@ class CrewServiceV0(
 
         val crew = crewRepository.findById(crewId)
         val member = memberRepository.findById(memberId)
+            ?: throw MemberNotFoundException()
 
         // Member Joined Crew Check
         if(crewMemberRepository.existsByCrewIdAndMemberId(crewId,memberId)) throw CrewMemberJoinedException()

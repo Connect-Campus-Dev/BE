@@ -222,7 +222,7 @@ class PostTest (
         postLikeService.postLikeManage(
                 PostLikeRequest(
                         post = postRepository.findById(createPost.post.id)!!,
-                        user = memberRepository.findById(testMember1.id!!),
+                        user = memberRepository.findById(testMember1.id!!) ?: throw EntityNotFoundException(),
                 )
         )
         // 2. 비교 및 검증
@@ -244,14 +244,14 @@ class PostTest (
         postLikeService.postLikeManage(
                 PostLikeRequest(
                         post = postRepository.findById(createPost.post.id)!!,
-                        user = memberRepository.findById(testMember1.id!!),
+                        user = memberRepository.findById(testMember1.id!!) ?: throw EntityNotFoundException(),
                 )
         )
         // 좋아요 -1
         postLikeService.postLikeManage(
                 PostLikeRequest(
                         post = postRepository.findById(createPost.post.id)!!,
-                        user = memberRepository.findById(testMember1.id!!),
+                        user = memberRepository.findById(testMember1.id!!) ?: throw EntityNotFoundException(),
                 )
         )
         // 2. 비교 및 검증

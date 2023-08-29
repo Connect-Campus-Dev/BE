@@ -26,11 +26,6 @@ class RabbitMQConfig {
     }
 
     @Bean
-    fun chatBinding(chatFanoutExchange: FanoutExchange, chatQueue: Queue): Binding {
-        return BindingBuilder.bind(chatQueue).to(chatFanoutExchange)
-    }
-
-    @Bean
     fun privateFanoutExchange(): FanoutExchange {
         return FanoutExchange("private-fanout")
     }

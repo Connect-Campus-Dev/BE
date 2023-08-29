@@ -9,5 +9,5 @@ import java.util.*
 
 interface MessageMongoRepository: MongoRepository<Message, String> {
     fun findFirstByChatIdAndSentAtGreaterThanOrderBySentAtDesc(chatId: UUID, joinedAt: LocalDateTime): Message?
-    fun countByChatIdAndSentAtGreaterThanAndUnReadMembersNotContains(chatId: UUID, joinedAt: LocalDateTime, memberId: UUID): Long
+    fun countByChatIdAndSentAtGreaterThanAndUnReadMembersNotContains(chatId: UUID, joinedAt: LocalDateTime, memberId: UUID): Int
 }

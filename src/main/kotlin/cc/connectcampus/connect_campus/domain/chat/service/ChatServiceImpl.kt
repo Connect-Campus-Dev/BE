@@ -105,8 +105,8 @@ class ChatServiceImpl(
                 chat = ChatInfo(
                     id = chat.id,
                     title = chat.title,
-                    type = chat.type.toString(),
-                    memberCount = members.size.toLong(),
+                    type = chat.type,
+                    memberCount = members.size,
                     unreadMessageCount = unreadMessageCount
                 ),
                 lastMessage = MessageInfo(

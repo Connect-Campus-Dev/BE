@@ -17,6 +17,6 @@ class Chat(
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID?= null,
+    val id: UUID ?= null,
 ) {
 }

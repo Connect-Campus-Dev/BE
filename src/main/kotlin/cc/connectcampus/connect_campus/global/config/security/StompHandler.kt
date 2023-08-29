@@ -25,8 +25,10 @@ class StompHandler(
 
     private val logger = org.slf4j.LoggerFactory.getLogger(this::class.java)!!
     override fun preSend(message: Message<*>, channel: MessageChannel): Message<*>? {
-        val accessor = MessageHeaderAccessor
-            .getAccessor(message, StompHeaderAccessor::class.java) ?: throw InvalidTokenException()
+        logger.info(message.toString())
+        logger.info(channel.toString())
+        val accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor::class.java)
+            ?: throw InvalidTokenException()
 
         if (accessor.command == StompCommand.CONNECT || accessor.command == StompCommand.SUBSCRIBE || accessor.command == StompCommand.SEND) {
             logger.info("===============================")
@@ -49,7 +51,7 @@ class StompHandler(
 
             //채팅방을 구독하는 경우, 해당 채팅방에 가입되어있는지 확인한다.
             //채팅방에 메시지를 보내는 경우, 해당 채팅방에 가입되어있는지 확인한다.
-            if ((accessor.command == StompCommand.SUBSCRIBE && accessor.destination?.startsWith("/user/queue/chats") == false) ||
+            if ((accessor.command == StompCommand.SUBSCRIBE && accessor.destination?.startsWith("/user/queue/private") == false) ||
                 (accessor.command == StompCommand.SEND && accessor.destination?.startsWith("/app/getChats") == false)) {
                 logger.info("Hello! ${accessor.destination}")
                 val userId = (authentication.principal as? CustomUser)?.id ?: throw InvalidTokenException()
@@ -57,6 +59,8 @@ class StompHandler(
                 verifyChatSubscription(userId, chatId)
             }
             if(accessor.command == StompCommand.SEND) {
+                //메시지 검증 필요
+                //content가 blank인지 확인
                 logger.info("Send!")
             }
         }

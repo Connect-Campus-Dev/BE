@@ -41,9 +41,23 @@ enum class ErrorCode(
     CREW_TAG_LENGTH_INVALID(400, "CR007", "크루 태그는 2자 이상, 10자 이하여야 해요."),
     CREW_TAG_COUNT_INVALID(400,"CR008", "크루 태그는 1개 이상, 5개 이하여야 해요."),
     CREW_TAG_DUPLICATION(400, "CR009", "크루 태그가 중복되었어요."),
-
-
+  
     // Chat
     CHAT_NOT_FOUND(400, "CH001", "존재하지 않는 채팅방이에요."),
     NOT_JOINED_CHAT(400, "CH002", "허용되지 않은 사용자에요."),
+    CREW_MEMBER_JOINED(400, "CR010", "이미 가입한 크루에요."),
+
+    // Attachment
+    INVALID_FILE_INPUT(400, "A001", "잘못된 파일이에요."),
+    INVALID_FILE_TYPE(400, "A002", "잘못된 파일 형식이에요."),
+    UPLOAD_FAIL(400, "A003", "파일 업로드에 실패했어요."),
+
+    // Post
+    POST_TITLE_LENGTH_INVALID(400, "P001", "게시글 제목은 2글자 이상이여야 해요."),
+    POST_CONTENT_LENGTH_INVALID(400, "P002", "게시글 내용은 2글자 이상이여야 해요."),
+    POST_TAG_INVALID(400, "P003", "게시글 태그를 지정해주세요."),
+    POST_TITLE_VALUE_INVALID(400, "P004", "제목이 부적절해요."),
+    POST_CONTENT_VALUE_INVALID(400, "P005", "부적절한 내용이에요."),
+    POST_COMMENT_LENGTH_INVALID(400, "P006","댓글 내용은 2글자 이상이여야 해요."),
+
 }

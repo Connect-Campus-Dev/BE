@@ -1,0 +1,6 @@
+package cc.connectcampus.connect_campus.domain.post.exception
+
+import cc.connectcampus.connect_campus.global.error.exception.ErrorCode
+import cc.connectcampus.connect_campus.global.error.exception.InvalidValueException
+
+class PostTitleInvalidException: InvalidValueException(ErrorCode.POST_TITLE_VALUE_INVALID)

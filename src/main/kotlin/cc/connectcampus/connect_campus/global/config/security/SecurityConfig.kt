@@ -60,6 +60,7 @@ class SecurityConfig(
                     .requestMatchers(mvcMatcherBuilder.pattern("/auth/**")).permitAll()
                     .requestMatchers(mvcMatcherBuilder.pattern(HttpMethod.GET, "/post")).permitAll()
                     .requestMatchers(AntPathRequestMatcher("/h2-console/**")).permitAll()
+                    .requestMatchers(mvcMatcherBuilder.pattern("/health")).permitAll()
 
                     //채팅 파트는 다 열어두고, stompHandler에서 검증
                     .requestMatchers(AntPathRequestMatcher("/topic/**")).permitAll()

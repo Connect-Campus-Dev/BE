@@ -8,15 +8,13 @@ import cc.connectcampus.connect_campus.domain.member.dto.request.LoginRequest
 import cc.connectcampus.connect_campus.domain.member.dto.request.SignupRequest
 import cc.connectcampus.connect_campus.domain.member.dto.response.CodeVerificationResponse
 import cc.connectcampus.connect_campus.domain.member.dto.response.EmailVerificationResponse
-import cc.connectcampus.connect_campus.domain.member.dto.response.LoginResponse
 import cc.connectcampus.connect_campus.domain.member.dto.response.SignupResponse
 import cc.connectcampus.connect_campus.domain.member.service.AuthService
 import cc.connectcampus.connect_campus.domain.member.service.EmailVerificationService
+import cc.connectcampus.connect_campus.global.config.security.TokenInfo
 import jakarta.validation.Valid
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import org.springframework.http.*
 
 @RestController
 @RequestMapping("/auth")
@@ -26,14 +24,17 @@ class AuthController(
 ) {
     @PostMapping("/signup")
     fun signup(@Valid @RequestBody signupRequest: SignupRequest): SignupResponse {
+
         val member: Member = authService.signup(signupRequest)
         return SignupResponse.fromMember(member)
     }
 
     @PostMapping("/login")
-    fun login(@Valid @RequestBody loginRequest: LoginRequest): LoginResponse {
-        val member: Member = authService.login(loginRequest)
-        return LoginResponse.fromMember(member)
+    fun login(@Valid @RequestBody loginRequest: LoginRequest): ResponseEntity<Any> {
+        val tokenInfo: TokenInfo = authService.login(loginRequest)
+        return ResponseEntity.ok().headers{
+                it.set("Authorization", "${tokenInfo.grantType} ${tokenInfo.accessToken}")
+            }.build()
     }
 
     @PostMapping("/nickname")

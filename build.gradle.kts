@@ -73,6 +73,10 @@ dependencies {
 
     // aws
     implementation("io.awspring.cloud:spring-cloud-starter-aws:2.3.1")
+
+    // redis
+    implementation("org.springframework.boot:spring-boot-starter-data-redis")
+
 }
 
 tasks.withType<KotlinCompile> {

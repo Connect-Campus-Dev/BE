@@ -7,11 +7,12 @@ import cc.connectcampus.connect_campus.domain.post.dto.request.PostCreationReque
 import cc.connectcampus.connect_campus.domain.post.dto.request.PostDeletionRequest
 import cc.connectcampus.connect_campus.domain.post.dto.response.PostDetailResponse
 import cc.connectcampus.connect_campus.domain.post.dto.response.PostResponse
+import org.springframework.data.domain.Page
 import java.util.*
 
 interface PostService {
     fun create(postCreationRequest: PostCreationRequest) : PostDetailResponse
-    fun readAll() : List<Post>
+    fun readList(page: Int) : Page<Post>
     fun readSingle(id: UUID, viewMember: Member) : PostResponse
     fun update(postUpdateRequest: PostUpdateRequest) : UUID
     fun delete(postDeletionRequest: PostDeletionRequest) : Boolean

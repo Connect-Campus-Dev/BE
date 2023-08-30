@@ -1,7 +1,10 @@
 package cc.connectcampus.connect_campus.domain.post
 
+import cc.connectcampus.connect_campus.domain.member.domain.Gender
 import cc.connectcampus.connect_campus.domain.member.domain.Member
+import cc.connectcampus.connect_campus.domain.member.domain.Role
 import cc.connectcampus.connect_campus.domain.member.repository.MemberRepository
+import cc.connectcampus.connect_campus.domain.model.Email
 import cc.connectcampus.connect_campus.domain.post.domain.Post
 import cc.connectcampus.connect_campus.domain.post.domain.PostTag
 import cc.connectcampus.connect_campus.domain.post.dto.request.*
@@ -47,7 +50,15 @@ class PostTest (
     @BeforeEach
     fun before(){
         testMember1 = Member.fixture()
-        testMember2 = Member.fixture()
+        testMember2 = Member(
+                nickname= "TestMember2",
+                email = Email("test@inha.edu"),
+                password = "password123",
+                enrollYear = 2023,
+                gender = Gender.MALE,
+                createdAt = LocalDateTime.now(),
+                role = Role.MEMBER,
+        )
         testPost = Post.fixture()
         postTag = PostTag.fixture()
         postUpdateTag = PostTag(
@@ -56,6 +67,7 @@ class PostTest (
         postTagRepository.save(postTag)
         postTagRepository.save(postUpdateTag)
         memberRepository.save(testMember1)
+        memberRepository.save(testMember2)
         univRepository.save(
                 Univ(
                         name = "인하대학교",
@@ -127,7 +139,87 @@ class PostTest (
             postService.create(postCreationRequest)
         }
     }
-    //post 전체 리스트 불러오기(10~15개)
+    @Test
+    @Transactional
+    fun `post list 10개 불러오기`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagName = "testTag",
+                writerId = testMember1,
+        )
+        repeat(10){
+            postService.create(postCreationRequest)
+        }
+        // 2. 실제 데이터
+        val postList = postService.readList(0)
+        // 3. 비교 및 검증
+        assertThat(postList.totalElements).isEqualTo(10)
+        // postList.content의 각 항목이 null이 아닌지 검증
+        repeat(10) {
+            assertThat(postList.content[it].content).isNotNull
+        }
+    }
+    @Test
+    @Transactional
+    fun `새로고침 후 다음 페이지 불러오기`(){
+        // 1. 예상 데이터
+        val nextCreationRequest = PostCreationRequest(
+                title = "oldPostTitle",
+                content = "oldPostContent",
+                tagName = "testTag",
+                writerId = testMember1,
+        )
+        postService.create(nextCreationRequest)
+        val postCreationRequest = PostCreationRequest(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagName = "testTag",
+                writerId = testMember1,
+        )
+        repeat(10){
+            postService.create(postCreationRequest)
+        }
+        postService.readList(0)
+        // 2. 실제 데이터
+        val postList = postService.readList(1)
+        // 3. 비교 및 검증
+        assertThat(postList.content[0].title).isEqualTo(nextCreationRequest.title)
+        assertThat(postList.content[0].content).isEqualTo(nextCreationRequest.content)
+    }
+    @Test
+    @Transactional
+    fun `시간 순 정렬`(){
+        // 1. 예상 데이터
+        val postCreationRequest = Post(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagId = postTag,
+                writerId = testMember1,
+                createdAt = LocalDateTime.of(2019,11,11,12,12,0),
+                likeCount = 0,
+                viewCount = 0,
+        )
+        postRepository.save(postCreationRequest)
+        val nextCreationRequest = Post(
+                title = "nextPostTitle",
+                content = "nextPostContent",
+                tagId = postTag,
+                writerId = testMember1,
+                createdAt = LocalDateTime.of(2022,11,11,12,12,0),
+                likeCount = 0,
+                viewCount = 0,
+        )
+        postRepository.save(nextCreationRequest)
+        // 2. 실제 데이터
+        val postList = postService.readList(0)
+        // 3. 비교 및 검증
+        assertThat(postList.content[0].title).isEqualTo(nextCreationRequest.title)
+        assertThat(postList.content[0].content).isEqualTo(nextCreationRequest.content)
+        assertThat(postList.content[1].title).isEqualTo(postCreationRequest.title)
+        assertThat(postList.content[1].content).isEqualTo(postCreationRequest.content)
+    }
     @Test
     @Transactional
     fun `post 상세 페이지 불러오기`(){
@@ -148,12 +240,57 @@ class PostTest (
         assertThat(getPostSingle.postDetail.content).isEqualTo(postCreation.content)
         assertThat(getPostSingle.postDetail.tagId.tagName).isEqualTo(postCreation.tagId.tagName)
         assertThat(getPostSingle.postDetail.writerId).isEqualTo(postCreation.writerId)
-        assertThat(getPostSingle.postDetail.viewCount).isEqualTo(0)
+        assertThat(getPostSingle.postDetail.viewCount).isEqualTo(1)
     }
     @Test
     @Transactional
-    fun `post 수정`(
-    ){
+    fun `조회수 중복 조회`(){
+        // 1. 예상 데이터
+        val postCreation = Post(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagId = postTag,
+                writerId = testMember1,
+                likeCount = 0,
+                viewCount = 0,
+        )
+        val createPost = postRepository.save(postCreation)
+        // 2. 실제 데이터
+        postService.readSingle(createPost.id!!, testMember1)
+        val getPostSingle = postService.readSingle(createPost.id!!, testMember1)
+        // 3. 비교 및 검증
+        assertThat(getPostSingle.postDetail.title).isEqualTo(postCreation.title)
+        assertThat(getPostSingle.postDetail.content).isEqualTo(postCreation.content)
+        assertThat(getPostSingle.postDetail.tagId.tagName).isEqualTo(postCreation.tagId.tagName)
+        assertThat(getPostSingle.postDetail.writerId).isEqualTo(postCreation.writerId)
+        assertThat(getPostSingle.postDetail.viewCount).isEqualTo(1)
+    }
+    @Test
+    @Transactional
+    fun `조회수 +2`(){
+        // 1. 예상 데이터
+        val postCreation = Post(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagId = postTag,
+                writerId = testMember1,
+                likeCount = 0,
+                viewCount = 0,
+        )
+        val createPost = postRepository.save(postCreation)
+        // 2. 실제 데이터
+        postService.readSingle(createPost.id!!, testMember1)
+        val getPostSingle = postService.readSingle(createPost.id!!, testMember2)
+        // 3. 비교 및 검증
+        assertThat(getPostSingle.postDetail.title).isEqualTo(postCreation.title)
+        assertThat(getPostSingle.postDetail.content).isEqualTo(postCreation.content)
+        assertThat(getPostSingle.postDetail.tagId.tagName).isEqualTo(postCreation.tagId.tagName)
+        assertThat(getPostSingle.postDetail.writerId).isEqualTo(postCreation.writerId)
+        assertThat(getPostSingle.postDetail.viewCount).isEqualTo(2)
+    }
+    @Test
+    @Transactional
+    fun `post 수정`(){
         // 1. 예상 데이터
         val postCreationRequest = PostCreationRequest(
                 title = testPost.title,

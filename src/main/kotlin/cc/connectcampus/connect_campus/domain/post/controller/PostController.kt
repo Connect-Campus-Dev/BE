@@ -8,6 +8,7 @@ import cc.connectcampus.connect_campus.domain.post.service.PostCommentService0
 import cc.connectcampus.connect_campus.domain.post.service.PostLikeService0
 import cc.connectcampus.connect_campus.domain.post.service.PostServiceV0
 import jakarta.validation.Valid
+import org.springframework.data.domain.Page
 import org.springframework.web.bind.annotation.*
 import java.util.UUID
 
@@ -35,8 +36,8 @@ class PostController (
         return postCommentService.postCommentCreate(postCommentCreationRequest)
     }
     @GetMapping
-    fun getListPost() : List<Post>{
-        return postService.readAll()
+    fun getListPost(@RequestParam("page") page: Int) : Page<Post>{
+        return postService.readList(page)
     }
     @GetMapping("/{id}")
     fun getSinglePost(@RequestParam id: UUID, viewMember: Member) : PostResponse{

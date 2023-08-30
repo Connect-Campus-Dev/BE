@@ -16,7 +16,11 @@ import cc.connectcampus.connect_campus.domain.post.repository.PostTagRepository
 import cc.connectcampus.connect_campus.domain.univ.service.UnivService
 import cc.connectcampus.connect_campus.global.error.exception.EntityNotFoundException
 import cc.connectcampus.connect_campus.global.error.exception.HandleAccessException
-//import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.stereotype.Service
 import java.util.*
@@ -27,7 +31,7 @@ class PostServiceV0 (
         val postTagRepository: PostTagRepository,
         val postCommentRepository: PostCommentRepository,
         val univService: UnivService,
-        //val redisTemplate: RedisTemplate<String, String>,
+        val redisTemplate: RedisTemplate<String, String>,
 
         ): PostService{
     @Transactional
@@ -57,30 +61,29 @@ class PostServiceV0 (
     }
 
     @Transactional
-    override fun readAll(): List<Post> {
-        //10~15개 불러오기 pagingandsortingrepository 참고
-        return postRepository.findAll()
+    override fun readList(page: Int): Page<Post> {
+        val pageable: Pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending())
+        return postRepository.findAll(pageable)
     }
 
     @Transactional
     override fun readSingle(id: UUID, viewMember: Member): PostResponse {
         val postDetail = postRepository.findById(id) ?: throw EntityNotFoundException()
-//        //게시글 조회수 증가
-//        val redisKey =  postDetail.id.toString()
-//        val redisUserKey = viewMember.id.toString()
-//        //유저 key로 조회한 게시글 List Length
-//        val redisListLen = redisTemplate.opsForList().size(redisUserKey)
-//        //유저 key로 조회한 게시글 List
-//        val redisPostList =
-//                if (redisListLen==0L) ArrayList<String>()
-//                else redisTemplate.opsForList().range(redisUserKey, 0, redisListLen!!.minus(1))
-//        //해당 게시글을 조회하지 않은 경우 조회수 + 1
-//        if(!redisPostList!!.contains(redisKey)) {
-//            postDetail.viewCount.plus(1)
-//            postRepository.save(postDetail)
-//            redisTemplate.opsForValue().set(redisKey,"views")
-//        }
-
+        //게시글 조회수 증가
+        val redisKey =  postDetail.id.toString()
+        val redisUserKey = viewMember.id.toString()
+        //유저 key로 조회한 게시글 List Length
+        val redisListLen = redisTemplate.opsForList().size(redisUserKey)
+        //유저 key로 조회한 게시글 List
+        val redisPostList =
+                if (redisListLen==0L) ArrayList()
+                else redisTemplate.opsForList().range(redisUserKey, 0, -1)
+        //해당 게시글을 조회하지 않은 경우 조회수 + 1
+        if(!redisPostList!!.contains(redisKey)) {
+            postDetail.viewCount++
+            postRepository.save(postDetail)
+            redisTemplate.opsForList().leftPush(redisUserKey, redisKey)
+        }
         return PostResponse(
                 postDetail = postDetail,
                 postCommentList = postCommentRepository.findAllByPost(postDetail)

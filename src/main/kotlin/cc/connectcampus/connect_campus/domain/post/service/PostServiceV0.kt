@@ -99,11 +99,11 @@ class PostServiceV0 (
     }
 
     @Transactional
-    override fun update(postUpdateRequest: PostUpdateRequest): UUID {
+    override fun update(postId: UUID, postUpdateRequest: PostUpdateRequest, memberId: UUID): PostDetailResponse {
         //데이터 검증
-        val savedPost = postRepository.findById(postUpdateRequest.id) ?: throw EntityNotFoundException()
-        //작성자 ID 검증
-        if (savedPost.writerId!=postUpdateRequest.writerId) throw HandleAccessException()
+        val savedPost = postRepository.findById(postId) ?: throw EntityNotFoundException()
+        //작성자 UUID 검증
+        if (savedPost.writerId.id!=memberId) throw HandleAccessException()
         //입력 예외 처리
         if (InputFilter.isInputNotValid(postUpdateRequest.title)) throw PostTitleInvalidException()
         if (InputFilter.isInputNotValid(postUpdateRequest.content)) throw PostContentInvalidException()
@@ -112,13 +112,24 @@ class PostServiceV0 (
         val postUpdate = Post(
                 title = postUpdateRequest.title,
                 content = postUpdateRequest.content,
-                writerId = postUpdateRequest.writerId,
+                writerId = savedPost.writerId,
                 likeCount = savedPost.likeCount,
                 viewCount = savedPost.viewCount,
                 tagId = pullPostTag,
                 id = savedPost.id
         )
-        return postRepository.save(postUpdate).id!!
+        val savePost = postRepository.save(postUpdate)
+        val commentList = postCommentRepository.findAllByPost(savePost)
+        return PostDetailResponse(
+                post = savePost,
+                postCommentList = commentList,
+                writerUniv = univService.getSchoolNameByEmailDomain(savePost.writerId.email),
+                writerNickname = "익명",
+                commentCount = when {
+                    commentList.isEmpty() -> 0
+                    else -> commentList.size
+                }
+        )
     }
 
     @Transactional

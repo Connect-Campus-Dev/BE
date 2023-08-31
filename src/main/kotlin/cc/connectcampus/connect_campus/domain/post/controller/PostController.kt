@@ -47,9 +47,11 @@ class PostController (
     fun getSinglePost(@RequestParam id: UUID, viewMember: Member) : PostResponse{
         return postService.readSingle(id, viewMember)
     }
-    @PutMapping
-    fun updatePost(@RequestBody postUpdateRequest: PostUpdateRequest) : UUID{
-        return postService.update(postUpdateRequest)
+    @PutMapping("/post/{id}")
+    fun updatePost(@PathVariable postId: String, @RequestBody postUpdateRequest: PostUpdateRequest, authentication: Authentication) : PostDetailResponse{
+        val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
+        val postUUID = UUID.fromString(postId)
+        return postService.update(postUUID, postUpdateRequest, memberId)
     }
     @PutMapping("/comment")
     fun updatePostComment(postCommentUpdateRequest: PostCommentUpdateRequest) : UUID{

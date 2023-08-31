@@ -14,7 +14,7 @@ interface PostService {
     fun create(postCreationRequest: PostCreationRequest, memberId: UUID) : PostDetailResponse
     fun readList(page: Int) : Page<Post>
     fun readSingle(id: UUID, viewMember: Member) : PostResponse
-    fun update(postUpdateRequest: PostUpdateRequest) : UUID
+    fun update(postId: UUID, postUpdateRequest: PostUpdateRequest, memberId: UUID) : PostDetailResponse
     fun delete(postDeletionRequest: PostDeletionRequest) : Boolean
 
 }

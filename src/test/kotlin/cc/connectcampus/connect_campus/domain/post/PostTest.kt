@@ -294,20 +294,18 @@ class PostTest (
         val curTime: LocalDateTime = LocalDateTime.now()
         val createPost = postService.create(postCreationRequest, testMember1.id!!)
         val postUpdateRequest = PostUpdateRequest(
-                id = createPost.post.id!!,
                 title = "updateTitle",
                 content = "updateContent",
                 tagName = "updateTag",
-                writerId = testMember1,
         )
-        postService.update(postUpdateRequest)
+        val updatePost = postService.update(createPost.post.id!!,postUpdateRequest, testMember1.id!!)
         // 2. 실제 데이터
-        val savedPost = postRepository.findById(postUpdateRequest.id) ?: throw EntityNotFoundException()
+        val savedPost = postRepository.findById(updatePost.post.id) ?: throw EntityNotFoundException()
         // 3. 비교 및 검증
         assertThat(savedPost.content).isEqualTo(postUpdateRequest.content)
         assertThat(savedPost.title).isEqualTo(postUpdateRequest.title)
         assertThat(savedPost.tagId.tagName).isEqualTo(postUpdateRequest.tagName)
-        assertThat(savedPost.writerId).isEqualTo(postUpdateRequest.writerId)
+        assertThat(savedPost.writerId).isEqualTo(testMember1)
         assertThat(savedPost.createdAt).isEqualTo(postRepository.findById(createPost.post.id)!!.createdAt)
         assertThat(savedPost.updatedAt).isNotEqualTo(curTime)
         assertThat(savedPost.likeCount).isEqualTo(0)

@@ -9,7 +9,6 @@ import cc.connectcampus.connect_campus.domain.post.service.PostCommentService0
 import cc.connectcampus.connect_campus.domain.post.service.PostLikeService0
 import cc.connectcampus.connect_campus.domain.post.service.PostServiceV0
 import cc.connectcampus.connect_campus.global.config.security.InvalidTokenException
-import jakarta.validation.Valid
 import org.springframework.data.domain.Page
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
@@ -47,7 +46,7 @@ class PostController (
     fun getSinglePost(@RequestParam id: UUID, viewMember: Member) : PostResponse{
         return postService.readSingle(id, viewMember)
     }
-    @PutMapping("/post/{id}")
+    @PutMapping("/post/{postId}")
     fun updatePost(@PathVariable postId: String, @RequestBody postUpdateRequest: PostUpdateRequest, authentication: Authentication) : PostDetailResponse{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
         val postUUID = UUID.fromString(postId)
@@ -61,7 +60,7 @@ class PostController (
     fun updatePostCommentChild(postCommentUpdateRequest: PostCommentUpdateRequest) : UUID{
         return postCommentService.postCommentUpdate(postCommentUpdateRequest)
     }
-    @DeleteMapping("/post/{id}")
+    @DeleteMapping("/post/{postId}")
     fun deletePost(@PathVariable postId: String, authentication: Authentication) : Post{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
         val postUUID = UUID.fromString(postId)

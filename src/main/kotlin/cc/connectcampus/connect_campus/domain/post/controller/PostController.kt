@@ -42,9 +42,11 @@ class PostController (
     fun getListPost(@RequestParam("page") page: Int) : Page<Post>{
         return postService.readList(page)
     }
-    @GetMapping("/{id}")
-    fun getSinglePost(@RequestParam id: UUID, viewMember: Member) : PostResponse{
-        return postService.readSingle(id, viewMember)
+    @GetMapping("/post/{postId}")
+    fun getSinglePost(@PathVariable postId: UUID, authentication: Authentication) : PostResponse{
+        //로그인 안한 멤버가 페이지 확인할 경우 조회수 count를 안하기 위해 memberId null로 반환
+        val memberId: UUID? = (authentication.principal as? CustomUser)?.id
+        return postService.readSingle(postId, memberId)
     }
     @PutMapping("/post/{postId}")
     fun updatePost(@PathVariable postId: String, @RequestBody postUpdateRequest: PostUpdateRequest, authentication: Authentication) : PostDetailResponse{

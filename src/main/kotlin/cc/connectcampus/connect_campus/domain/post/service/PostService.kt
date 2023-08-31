@@ -12,7 +12,7 @@ import java.util.*
 interface PostService {
     fun create(postCreationRequest: PostCreationRequest, memberId: UUID) : PostDetailResponse
     fun readList(page: Int) : Page<Post>
-    fun readSingle(id: UUID, viewMember: Member) : PostResponse
+    fun readSingle(postId: UUID, memberId: UUID?) : PostResponse
     fun update(postId: UUID, postUpdateRequest: PostUpdateRequest, memberId: UUID) : PostDetailResponse
     fun delete(postId: UUID, memberId: UUID) : Post
 

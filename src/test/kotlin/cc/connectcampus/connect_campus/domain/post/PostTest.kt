@@ -230,12 +230,13 @@ class PostTest (
         )
         val createPost = postRepository.save(postCreation)
         // 2. 실제 데이터
-        val getPostSingle = postService.readSingle(createPost.id!!, testMember1)
+        val getPostSingle = postService.readSingle(createPost.id!!, testMember1.id)
         // 3. 비교 및 검증
         assertThat(getPostSingle.postDetail.title).isEqualTo(postCreation.title)
         assertThat(getPostSingle.postDetail.content).isEqualTo(postCreation.content)
         assertThat(getPostSingle.postDetail.tagId.tagName).isEqualTo(postCreation.tagId.tagName)
         assertThat(getPostSingle.postDetail.writerId).isEqualTo(postCreation.writerId)
+        assertThat(getPostSingle.commentCount).isEqualTo(0)
         assertThat(getPostSingle.postDetail.viewCount).isEqualTo(1)
     }
     @Test
@@ -252,13 +253,14 @@ class PostTest (
         )
         val createPost = postRepository.save(postCreation)
         // 2. 실제 데이터
-        postService.readSingle(createPost.id!!, testMember1)
-        val getPostSingle = postService.readSingle(createPost.id!!, testMember1)
+        postService.readSingle(createPost.id!!, testMember1.id)
+        val getPostSingle = postService.readSingle(createPost.id!!, testMember1.id)
         // 3. 비교 및 검증
         assertThat(getPostSingle.postDetail.title).isEqualTo(postCreation.title)
         assertThat(getPostSingle.postDetail.content).isEqualTo(postCreation.content)
         assertThat(getPostSingle.postDetail.tagId.tagName).isEqualTo(postCreation.tagId.tagName)
         assertThat(getPostSingle.postDetail.writerId).isEqualTo(postCreation.writerId)
+        assertThat(getPostSingle.commentCount).isEqualTo(0)
         assertThat(getPostSingle.postDetail.viewCount).isEqualTo(1)
     }
     @Test
@@ -275,14 +277,38 @@ class PostTest (
         )
         val createPost = postRepository.save(postCreation)
         // 2. 실제 데이터
-        postService.readSingle(createPost.id!!, testMember1)
-        val getPostSingle = postService.readSingle(createPost.id!!, testMember2)
+        postService.readSingle(createPost.id!!, testMember1.id)
+        val getPostSingle = postService.readSingle(createPost.id!!, testMember2.id)
         // 3. 비교 및 검증
         assertThat(getPostSingle.postDetail.title).isEqualTo(postCreation.title)
         assertThat(getPostSingle.postDetail.content).isEqualTo(postCreation.content)
         assertThat(getPostSingle.postDetail.tagId.tagName).isEqualTo(postCreation.tagId.tagName)
         assertThat(getPostSingle.postDetail.writerId).isEqualTo(postCreation.writerId)
+        assertThat(getPostSingle.commentCount).isEqualTo(0)
         assertThat(getPostSingle.postDetail.viewCount).isEqualTo(2)
+    }
+    @Test
+    @Transactional
+    fun `로그인 안한 멤버가 상세페이지 조회 시`(){
+        // 1. 예상 데이터
+        val postCreation = Post(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagId = postTag,
+                writerId = testMember1,
+                likeCount = 0,
+                viewCount = 0,
+        )
+        val createPost = postRepository.save(postCreation)
+        // 2. 실제 데이터
+        val getPostSingle = postService.readSingle(createPost.id!!, null)
+        // 3. 비교 및 검증
+        assertThat(getPostSingle.postDetail.title).isEqualTo(postCreation.title)
+        assertThat(getPostSingle.postDetail.content).isEqualTo(postCreation.content)
+        assertThat(getPostSingle.postDetail.tagId.tagName).isEqualTo(postCreation.tagId.tagName)
+        assertThat(getPostSingle.postDetail.writerId).isEqualTo(postCreation.writerId)
+        assertThat(getPostSingle.commentCount).isEqualTo(0)
+        assertThat(getPostSingle.postDetail.viewCount).isEqualTo(0)
     }
     @Test
     @Transactional

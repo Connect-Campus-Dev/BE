@@ -74,11 +74,20 @@ class PostServiceV0 (
     }
 
     @Transactional
-    override fun readSingle(id: UUID, viewMember: Member): PostResponse {
-        val postDetail = postRepository.findById(id) ?: throw EntityNotFoundException()
+    override fun readSingle(postId: UUID, memberId: UUID?): PostResponse {
+        val postDetail = postRepository.findById(postId) ?: throw EntityNotFoundException()
+        val commentList = postCommentRepository.findAllByPost(postDetail)
+        //로그인 안한 멤버가 상세페이지에 들어온 경우
+        if(memberId==null)
+            return PostResponse(
+                    postDetail = postDetail,
+                    postCommentList = commentList,
+                    commentCount = commentList.size,
+
+            )
         //게시글 조회수 증가
         val redisKey =  postDetail.id.toString()
-        val redisUserKey = viewMember.id.toString()
+        val redisUserKey = memberId.toString()
         //유저 key로 조회한 게시글 List Length
         val redisListLen = redisTemplate.opsForList().size(redisUserKey)
         //유저 key로 조회한 게시글 List
@@ -93,7 +102,8 @@ class PostServiceV0 (
         }
         return PostResponse(
                 postDetail = postDetail,
-                postCommentList = postCommentRepository.findAllByPost(postDetail)
+                postCommentList = commentList,
+                commentCount = commentList.size,
         )
     }
 

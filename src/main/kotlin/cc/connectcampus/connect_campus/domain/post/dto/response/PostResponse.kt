@@ -6,4 +6,5 @@ import cc.connectcampus.connect_campus.domain.post.domain.PostComment
 data class PostResponse(
         val postDetail: Post,
         val postCommentList : MutableList<PostComment>,
+        val commentCount : Int,
 )

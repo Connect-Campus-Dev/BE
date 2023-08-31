@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page
 import java.util.*
 
 interface PostService {
-    fun create(postCreationRequest: PostCreationRequest) : PostDetailResponse
+    fun create(postCreationRequest: PostCreationRequest, memberId: UUID) : PostDetailResponse
     fun readList(page: Int) : Page<Post>
     fun readSingle(id: UUID, viewMember: Member) : PostResponse
     fun update(postUpdateRequest: PostUpdateRequest) : UUID

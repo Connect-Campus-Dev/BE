@@ -12,7 +12,6 @@ data class PostCreationRequest (
     val content: String,
     @field:NotBlank @field:Size(min = 2, max = 60)
     val tagName: String,
-    val writerId: Member,
 ){
     companion object{
         fun toPostCreation(postCreationRequest: PostCreationRequest): PostCreationRequest{
@@ -20,7 +19,6 @@ data class PostCreationRequest (
                     title = postCreationRequest.title,
                     content = postCreationRequest.content,
                     tagName = postCreationRequest.tagName,
-                    writerId = postCreationRequest.writerId,
             )
         }
     }

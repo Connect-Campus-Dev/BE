@@ -83,16 +83,16 @@ class PostTest (
                 title = "newPostTitle",
                 content = "newPostContent",
                 tagName = "testTag",
-                writerId = testMember1,
         )
-        val createPost = postService.create(postCreationRequest)
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
         // 2. 실제 데이터
         val savedPost = postRepository.findById(createPost.post.id) ?: throw EntityNotFoundException()
         // 3. 비교 및 검증
         assertThat(savedPost.title).isEqualTo(postCreationRequest.title)
         assertThat(savedPost.content).isEqualTo(postCreationRequest.content)
         assertThat(savedPost.tagId.tagName).isEqualTo(postCreationRequest.tagName)
-        assertThat(savedPost.writerId).isEqualTo(postCreationRequest.writerId)
+        assertThat(savedPost.writerId).isEqualTo(testMember1)
+        assertThat(createPost.commentCount).isEqualTo(0)
     }
     @Test
     @Transactional
@@ -102,11 +102,10 @@ class PostTest (
                 title = "씨발",
                 content = "newPostContent",
                 tagName = "testTag",
-                writerId = testMember1,
         )
         // 2. 검증
         assertThrows<PostTitleInvalidException> {
-            postService.create(postCreationRequest)
+            postService.create(postCreationRequest, testMember1.id!!)
         }
     }
     @Test
@@ -117,11 +116,10 @@ class PostTest (
                 title = "newPostTitle",
                 content = "씨발",
                 tagName = "testTag",
-                writerId = testMember1,
         )
         // 2. 검증
         assertThrows<PostContentInvalidException> {
-            postService.create(postCreationRequest)
+            postService.create(postCreationRequest, testMember1.id!!)
         }
     }
     @Test
@@ -132,11 +130,10 @@ class PostTest (
                 title = "newPostTitle",
                 content = "newPostContent",
                 tagName = "",
-                writerId = testMember1,
         )
         // 2. 검증
         assertThrows<PostTagInvalidException> {
-            postService.create(postCreationRequest)
+            postService.create(postCreationRequest, testMember1.id!!)
         }
     }
     @Test
@@ -147,10 +144,9 @@ class PostTest (
                 title = "newPostTitle",
                 content = "newPostContent",
                 tagName = "testTag",
-                writerId = testMember1,
         )
         repeat(10){
-            postService.create(postCreationRequest)
+            postService.create(postCreationRequest, testMember1.id!!)
         }
         // 2. 실제 데이터
         val postList = postService.readList(0)
@@ -169,17 +165,15 @@ class PostTest (
                 title = "oldPostTitle",
                 content = "oldPostContent",
                 tagName = "testTag",
-                writerId = testMember1,
         )
-        postService.create(nextCreationRequest)
+        postService.create(nextCreationRequest, testMember1.id!!)
         val postCreationRequest = PostCreationRequest(
                 title = "newPostTitle",
                 content = "newPostContent",
                 tagName = "testTag",
-                writerId = testMember1,
         )
         repeat(10){
-            postService.create(postCreationRequest)
+            postService.create(postCreationRequest, testMember1.id!!)
         }
         postService.readList(0)
         // 2. 실제 데이터
@@ -296,10 +290,9 @@ class PostTest (
                 title = testPost.title,
                 content = testPost.content,
                 tagName = testPost.tagId.tagName,
-                writerId = testMember1
         )
         val curTime: LocalDateTime = LocalDateTime.now()
-        val createPost = postService.create(postCreationRequest)
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
         val postUpdateRequest = PostUpdateRequest(
                 id = createPost.post.id!!,
                 title = "updateTitle",
@@ -353,9 +346,8 @@ class PostTest (
                 title = "newPostTitle",
                 content = "newPostContent",
                 tagName = "testTag",
-                writerId = testMember1,
         )
-        val createPost = postService.create(postCreationRequest)
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
         postLikeService.postLikeManage(
                 PostLikeRequest(
                         post = postRepository.findById(createPost.post.id)!!,
@@ -374,9 +366,8 @@ class PostTest (
                 title = "newPostTitle",
                 content = "newPostContent",
                 tagName = "testTag",
-                writerId = testMember1,
         )
-        val createPost = postService.create(postCreationRequest)
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
         // 좋아요 +1
         postLikeService.postLikeManage(
                 PostLikeRequest(
@@ -403,9 +394,8 @@ class PostTest (
                 title = testPost.title,
                 content = testPost.content,
                 tagName = testPost.tagId.tagName,
-                writerId = testMember1
         )
-        val createPost = postService.create(postCreationRequest)
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
         val postCommentRequest = PostCommentCreationRequest(
                 post = postRepository.findById(createPost.post.id)!!,
                 writerId = testMember1,
@@ -428,9 +418,8 @@ class PostTest (
                 title = testPost.title,
                 content = testPost.content,
                 tagName = testPost.tagId.tagName,
-                writerId = testMember1
         )
-        val createPost = postService.create(postCreationRequest)
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
         val postCommentRequest = PostCommentCreationRequest(
                 post = postRepository.findById(createPost.post.id)!!,
                 writerId = testMember1,
@@ -458,9 +447,8 @@ class PostTest (
                 title = testPost.title,
                 content = testPost.content,
                 tagName = testPost.tagId.tagName,
-                writerId = testMember1
         )
-        val createPost = postService.create(postCreationRequest)
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
         val postCommentRequest = PostCommentCreationRequest(
                 post = postRepository.findById(createPost.post.id)!!,
                 writerId = testMember1,
@@ -490,9 +478,8 @@ class PostTest (
                 title = testPost.title,
                 content = testPost.content,
                 tagName = testPost.tagId.tagName,
-                writerId = testMember1
         )
-        val createPost = postService.create(postCreationRequest)
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
         val postCommentRequest = PostCommentCreationRequest(
                 post = postRepository.findById(createPost.post.id)!!,
                 writerId = testMember1,

@@ -1,6 +1,7 @@
 package cc.connectcampus.connect_campus.domain.post.service
 
 import cc.connectcampus.connect_campus.domain.member.domain.Member
+import cc.connectcampus.connect_campus.domain.member.repository.MemberRepository
 import cc.connectcampus.connect_campus.domain.model.InputFilter
 import cc.connectcampus.connect_campus.domain.post.domain.Post
 import cc.connectcampus.connect_campus.domain.post.domain.PostTag
@@ -32,31 +33,38 @@ class PostServiceV0 (
         val postCommentRepository: PostCommentRepository,
         val univService: UnivService,
         val redisTemplate: RedisTemplate<String, String>,
-
+        val memberRepository: MemberRepository,
         ): PostService{
     @Transactional
-    override fun create(postCreationRequest: PostCreationRequest): PostDetailResponse {
+    override fun create(postCreationRequest: PostCreationRequest, memberId: UUID): PostDetailResponse {
         //입력 예외 처리
         if (InputFilter.isInputNotValid(postCreationRequest.title)) throw PostTitleInvalidException()
         if (InputFilter.isInputNotValid(postCreationRequest.content)) throw PostContentInvalidException()
         //태그 불러오기
         val pullPostTag = tagToPost(postCreationRequest.tagName)
+        //멤버 불러오기
+        val member = memberRepository.findById(memberId)
         //게시글 저장
         val createPost = Post(
                 title = postCreationRequest.title,
                 content = postCreationRequest.content,
                 tagId = pullPostTag,
-                writerId = postCreationRequest.writerId,
+                writerId = member!!,
                 likeCount = 0,
                 viewCount = 0,
         )
         val savePost = postRepository.save(createPost)
-        //생성된 게시글로 이동하기 위해 Detail 반환
+        //댓글 불러오기
+        val commentList = postCommentRepository.findAllByPost(savePost)
         return PostDetailResponse(
                 post = savePost,
-                postCommentList = postCommentRepository.findAllByPost(savePost),
+                postCommentList = commentList,
                 writerUniv = univService.getSchoolNameByEmailDomain(savePost.writerId.email),
-                writerNickname = savePost.writerId.nickname,
+                writerNickname = "익명",
+                commentCount = when {
+                    commentList.isEmpty() -> 0
+                    else -> commentList.size
+                }
         )
     }
 

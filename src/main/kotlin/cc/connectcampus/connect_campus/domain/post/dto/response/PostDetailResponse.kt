@@ -8,4 +8,5 @@ data class PostDetailResponse (
         val postCommentList : MutableList<PostComment>,
         val writerUniv : String,
         val writerNickname : String,
+        val commentCount: Int,
 )

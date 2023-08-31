@@ -61,9 +61,11 @@ class PostController (
     fun updatePostCommentChild(postCommentUpdateRequest: PostCommentUpdateRequest) : UUID{
         return postCommentService.postCommentUpdate(postCommentUpdateRequest)
     }
-    @DeleteMapping
-    fun deletePost(@Valid @RequestBody postDeletionRequest: PostDeletionRequest) : Boolean{
-        return postService.delete(postDeletionRequest)
+    @DeleteMapping("/post/{id}")
+    fun deletePost(@PathVariable postId: String, authentication: Authentication) : Post{
+        val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
+        val postUUID = UUID.fromString(postId)
+        return postService.delete(postUUID, memberId)
     }
     @DeleteMapping("/comment")
     fun deletePostComment(postCommentDeletionRequest: PostCommentDeletionRequest) : UUID{

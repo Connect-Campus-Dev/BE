@@ -21,6 +21,7 @@ import cc.connectcampus.connect_campus.domain.post.service.PostServiceV0
 import cc.connectcampus.connect_campus.domain.univ.domain.Univ
 import cc.connectcampus.connect_campus.domain.univ.repository.UnivRepository
 import cc.connectcampus.connect_campus.global.error.exception.EntityNotFoundException
+import cc.connectcampus.connect_campus.global.error.exception.HandleAccessException
 import org.springframework.transaction.annotation.Transactional
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.assertThrows
@@ -29,6 +30,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import java.time.LocalDateTime
+import java.util.*
 
 @SpringBootTest
 class PostTest (
@@ -326,15 +328,56 @@ class PostTest (
         )
         val createPost = postRepository.save(postCreation)
         val deletePost = postService.delete(
-                PostDeletionRequest(
-                        id = createPost.id!!,
-                        writerId = postRepository.findById(createPost.id)!!.writerId,
-                        )
+                createPost.id!!,
+                testMember1.id!!,
         )
         // 2. 비교 및 검증
-        assertThat(deletePost).isEqualTo(true)
+        assertThat(deletePost).isEqualTo(createPost)
         val check = postRepository.findById(createPost.id)
         assertThat(check).isNull()
+    }
+    @Test
+    @Transactional
+    fun `다른 postId 삭제 예외`(){
+        // 1. 예상 데이터
+        val postCreation = Post(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagId = postTag,
+                writerId = testMember1,
+                likeCount = 0,
+                viewCount = 0,
+        )
+        val createPost = postRepository.save(postCreation)
+        val randomId = UUID.randomUUID()
+        // 2. 비교 및 검증
+        assertThrows<EntityNotFoundException> {
+            postService.delete(
+                    randomId,
+                    testMember1.id!!,
+            )
+        }
+    }
+    @Test
+    @Transactional
+    fun `다른 회원이 post삭제 예외`(){
+        // 1. 예상 데이터
+        val postCreation = Post(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagId = postTag,
+                writerId = testMember1,
+                likeCount = 0,
+                viewCount = 0,
+        )
+        val createPost = postRepository.save(postCreation)
+        // 2. 비교 및 검증
+        assertThrows<HandleAccessException> {
+            postService.delete(
+                    createPost.id!!,
+                    testMember2.id!!,
+            )
+        }
     }
     @Test
     @Transactional

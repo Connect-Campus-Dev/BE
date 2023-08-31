@@ -7,7 +7,6 @@ import cc.connectcampus.connect_campus.domain.post.domain.Post
 import cc.connectcampus.connect_campus.domain.post.domain.PostTag
 import cc.connectcampus.connect_campus.domain.post.dto.request.PostUpdateRequest
 import cc.connectcampus.connect_campus.domain.post.dto.request.PostCreationRequest
-import cc.connectcampus.connect_campus.domain.post.dto.request.PostDeletionRequest
 import cc.connectcampus.connect_campus.domain.post.dto.response.PostDetailResponse
 import cc.connectcampus.connect_campus.domain.post.dto.response.PostResponse
 import cc.connectcampus.connect_campus.domain.post.exception.*
@@ -133,13 +132,13 @@ class PostServiceV0 (
     }
 
     @Transactional
-    override fun delete(postDeletionRequest: PostDeletionRequest): Boolean {
+    override fun delete(postId: UUID, memberId: UUID): Post {
         //데이터 검증
-        val postDetail = postRepository.findById(postDeletionRequest.id) ?: throw EntityNotFoundException()
+        val postDetail = postRepository.findById(postId) ?: throw EntityNotFoundException()
         //작성자 ID 검증
-        if (postDetail.writerId!=postDeletionRequest.writerId) throw HandleAccessException()
+        if (postDetail.writerId.id!=memberId) throw HandleAccessException()
         postRepository.delete(postDetail)
-        return true
+        return postDetail
     }
 
     fun tagToPost(tagName: String): PostTag {

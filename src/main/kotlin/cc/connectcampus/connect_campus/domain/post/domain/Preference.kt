@@ -7,20 +7,24 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
-class PostLike (
+class Preference (
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID?= null,
 
     @ManyToOne
-    @JoinColumn(name =  "post_id")
-    val post: Post,
+    @JoinColumn(name = "post_id")
+    val post: Post?= null,
+
+    @ManyToOne
+    @JoinColumn(name = "comment_id")
+    val comment: PostComment?= null,
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "member_id")
     val member: Member,
 
     @CreationTimestamp
     @Column(name = "created_at")
-    val createdAt: LocalDateTime? = null,
+    val createdAt: LocalDateTime? = LocalDateTime.now(),
 )

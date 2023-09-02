@@ -49,7 +49,6 @@ class PostServiceV0 (
                 content = postCreationRequest.content,
                 tagId = pullPostTag,
                 writerId = member!!,
-                likeCount = 0,
                 viewCount = 0,
         )
         val savePost = postRepository.save(createPost)
@@ -122,7 +121,7 @@ class PostServiceV0 (
                 title = postUpdateRequest.title,
                 content = postUpdateRequest.content,
                 writerId = savedPost.writerId,
-                likeCount = savedPost.likeCount,
+                preferences = savedPost.preferences,
                 viewCount = savedPost.viewCount,
                 tagId = pullPostTag,
                 id = savedPost.id

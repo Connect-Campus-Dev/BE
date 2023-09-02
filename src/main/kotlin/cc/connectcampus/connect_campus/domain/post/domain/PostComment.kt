@@ -28,6 +28,9 @@ class PostComment (
         @Column(nullable = false)
         val content: String,
 
+        @OneToMany(mappedBy = "comment", cascade = [CascadeType.REMOVE])
+        val preferences: MutableList<Preference>? = mutableListOf(),
+
         @CreationTimestamp
         @Column(name = "created_at")
         val createdAt: LocalDateTime? = null,
@@ -43,9 +46,10 @@ class PostComment (
                 member: Member = Member.fixture(),
                 parent: PostComment? = null,
                 content: String = "testComment",
+                preferences: MutableList<Preference> = mutableListOf(),
                 createdAt: LocalDateTime = LocalDateTime.now()
         ): PostComment{
-            return PostComment(id,post,member,parent, content,createdAt)
+            return PostComment(id,post,member,parent, content, preferences ,createdAt)
         }
     }
 }

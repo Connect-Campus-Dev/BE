@@ -34,9 +34,8 @@ class Post (
     @Column(name = "updated_at")
     val updatedAt: LocalDateTime? = null,
 
-    @ColumnDefault("0")
-    @Column(name = "like_cnt", nullable = false)
-    var likeCount: Int,
+    @OneToMany(mappedBy = "post", cascade = [CascadeType.REMOVE])
+    val preferences: MutableList<Preference>? = mutableListOf(),
 
     @ColumnDefault("0")
     @Column(name = "view_cnt", nullable = false)
@@ -53,10 +52,10 @@ class Post (
                 writerId: Member = Member.fixture(),
                 createdAt: LocalDateTime = LocalDateTime.now(),
                 updatedAt: LocalDateTime? = null,
-                likeCount: Int = 0,
+                preferences: MutableList<Preference> = mutableListOf(),
                 viewCount: Int = 0,
         ): Post{
-            return Post(id, title, content, tagId, writerId, createdAt, updatedAt, likeCount, viewCount)
+            return Post(id, title, content, tagId, writerId, createdAt, updatedAt, preferences, viewCount)
         }
     }
 }

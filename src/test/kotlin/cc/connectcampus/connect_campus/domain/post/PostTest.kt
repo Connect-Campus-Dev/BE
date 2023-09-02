@@ -12,11 +12,11 @@ import cc.connectcampus.connect_campus.domain.post.exception.PostContentInvalidE
 import cc.connectcampus.connect_campus.domain.post.exception.PostTagInvalidException
 import cc.connectcampus.connect_campus.domain.post.exception.PostTitleInvalidException
 import cc.connectcampus.connect_campus.domain.post.repository.PostCommentRepository
-import cc.connectcampus.connect_campus.domain.post.repository.PostLikeRepository
+import cc.connectcampus.connect_campus.domain.post.repository.PreferenceRepository
 import cc.connectcampus.connect_campus.domain.post.repository.PostRepository
 import cc.connectcampus.connect_campus.domain.post.repository.PostTagRepository
 import cc.connectcampus.connect_campus.domain.post.service.PostCommentService0
-import cc.connectcampus.connect_campus.domain.post.service.PostLikeService0
+import cc.connectcampus.connect_campus.domain.post.service.PreferenceService0
 import cc.connectcampus.connect_campus.domain.post.service.PostServiceV0
 import cc.connectcampus.connect_campus.domain.univ.domain.Univ
 import cc.connectcampus.connect_campus.domain.univ.repository.UnivRepository
@@ -37,9 +37,9 @@ class PostTest (
         @Autowired val postRepository: PostRepository,
         @Autowired val postTagRepository: PostTagRepository,
         @Autowired val postService: PostServiceV0,
-        @Autowired val postLikeService: PostLikeService0,
+        @Autowired val preferenceService: PreferenceService0,
         @Autowired val memberRepository: MemberRepository,
-        @Autowired val postLikeRepository: PostLikeRepository,
+        @Autowired val preferenceRepository: PreferenceRepository,
         @Autowired val postCommentService: PostCommentService0,
         @Autowired val postCommentRepository: PostCommentRepository,
         @Autowired val univRepository: UnivRepository,
@@ -194,7 +194,6 @@ class PostTest (
                 tagId = postTag,
                 writerId = testMember1,
                 createdAt = LocalDateTime.of(2019,11,11,12,12,0),
-                likeCount = 0,
                 viewCount = 0,
         )
         postRepository.save(postCreationRequest)
@@ -204,7 +203,6 @@ class PostTest (
                 tagId = postTag,
                 writerId = testMember1,
                 createdAt = LocalDateTime.of(2022,11,11,12,12,0),
-                likeCount = 0,
                 viewCount = 0,
         )
         postRepository.save(nextCreationRequest)
@@ -225,7 +223,6 @@ class PostTest (
                 content = "newPostContent",
                 tagId = postTag,
                 writerId = testMember1,
-                likeCount = 0,
                 viewCount = 0,
         )
         val createPost = postRepository.save(postCreation)
@@ -248,7 +245,6 @@ class PostTest (
                 content = "newPostContent",
                 tagId = postTag,
                 writerId = testMember1,
-                likeCount = 0,
                 viewCount = 0,
         )
         val createPost = postRepository.save(postCreation)
@@ -272,7 +268,6 @@ class PostTest (
                 content = "newPostContent",
                 tagId = postTag,
                 writerId = testMember1,
-                likeCount = 0,
                 viewCount = 0,
         )
         val createPost = postRepository.save(postCreation)
@@ -296,7 +291,6 @@ class PostTest (
                 content = "newPostContent",
                 tagId = postTag,
                 writerId = testMember1,
-                likeCount = 0,
                 viewCount = 0,
         )
         val createPost = postRepository.save(postCreation)
@@ -336,7 +330,7 @@ class PostTest (
         assertThat(savedPost.writerId).isEqualTo(testMember1)
         assertThat(savedPost.createdAt).isEqualTo(postRepository.findById(createPost.post.id)!!.createdAt)
         assertThat(savedPost.updatedAt).isNotEqualTo(curTime)
-        assertThat(savedPost.likeCount).isEqualTo(0)
+        assertThat(savedPost.preferences!!.size).isEqualTo(0)
         assertThat(savedPost.viewCount).isEqualTo(0)
     }
     //삭제(데이터 유무, 로그인 유무)
@@ -349,7 +343,6 @@ class PostTest (
                 content = "newPostContent",
                 tagId = postTag,
                 writerId = testMember1,
-                likeCount = 0,
                 viewCount = 0,
         )
         val createPost = postRepository.save(postCreation)
@@ -371,10 +364,9 @@ class PostTest (
                 content = "newPostContent",
                 tagId = postTag,
                 writerId = testMember1,
-                likeCount = 0,
                 viewCount = 0,
         )
-        val createPost = postRepository.save(postCreation)
+        postRepository.save(postCreation)
         val randomId = UUID.randomUUID()
         // 2. 비교 및 검증
         assertThrows<EntityNotFoundException> {
@@ -393,7 +385,6 @@ class PostTest (
                 content = "newPostContent",
                 tagId = postTag,
                 writerId = testMember1,
-                likeCount = 0,
                 viewCount = 0,
         )
         val createPost = postRepository.save(postCreation)
@@ -407,7 +398,7 @@ class PostTest (
     }
     @Test
     @Transactional
-    fun `좋아요 +1`(){
+    fun `게시글 좋아요 +1`(){
         // 1. 예상 데이터
         val postCreationRequest = PostCreationRequest(
                 title = "newPostTitle",
@@ -415,19 +406,17 @@ class PostTest (
                 tagName = "testTag",
         )
         val createPost = postService.create(postCreationRequest, testMember1.id!!)
-        postLikeService.postLikeManage(
-                PostLikeRequest(
-                        post = postRepository.findById(createPost.post.id)!!,
-                        user = memberRepository.findById(testMember1.id!!) ?: throw EntityNotFoundException(),
-                )
+        val preferencePost = preferenceService.postPreferenceManage(
+                postId = createPost.post.id!!,
+                memberId = testMember1.id!!,
         )
         // 2. 비교 및 검증
-        assertThat(postRepository.findById(createPost.post.id)!!.likeCount).isEqualTo(1)
-        assertThat(postLikeRepository.findAll().count()).isEqualTo(1)
+        assertThat(preferencePost).isEqualTo(1)
+        assertThat(preferenceRepository.findAll().count()).isEqualTo(1)
     }
     @Test
     @Transactional
-    fun `좋아요 -1`(){
+    fun `게시글 좋아요 -1`(){
         // 1. 예상 데이터
         val postCreationRequest = PostCreationRequest(
                 title = "newPostTitle",
@@ -436,22 +425,304 @@ class PostTest (
         )
         val createPost = postService.create(postCreationRequest, testMember1.id!!)
         // 좋아요 +1
-        postLikeService.postLikeManage(
-                PostLikeRequest(
-                        post = postRepository.findById(createPost.post.id)!!,
-                        user = memberRepository.findById(testMember1.id!!) ?: throw EntityNotFoundException(),
-                )
+        preferenceService.postPreferenceManage(
+                postId = createPost.post.id!!,
+                memberId = testMember1.id!!
         )
         // 좋아요 -1
-        postLikeService.postLikeManage(
-                PostLikeRequest(
-                        post = postRepository.findById(createPost.post.id)!!,
-                        user = memberRepository.findById(testMember1.id!!) ?: throw EntityNotFoundException(),
-                )
+        val resultPreference = preferenceService.postPreferenceManage(
+                postId = createPost.post.id!!,
+                memberId = testMember1.id!!
         )
         // 2. 비교 및 검증
-        assertThat(postRepository.findById(createPost.post.id)!!.likeCount).isEqualTo(0)
-        assertThat(postLikeRepository.findAll().count()).isEqualTo(0)
+        assertThat(resultPreference).isEqualTo(0)
+        assertThat(preferenceRepository.findAll().count()).isEqualTo(0)
+    }
+    @Test
+    @Transactional
+    fun `게시글 좋아요 +2`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagName = "testTag",
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        preferenceService.postPreferenceManage(
+                postId = createPost.post.id!!,
+                memberId = testMember1.id!!
+        )
+        val resultPreference = preferenceService.postPreferenceManage(
+                postId = createPost.post.id!!,
+                memberId = testMember2.id!!
+        )
+        // 2. 비교 및 검증
+        assertThat(resultPreference).isEqualTo(2)
+        assertThat(preferenceRepository.findAll().count()).isEqualTo(2)
+    }
+    @Test
+    @Transactional
+    fun `게시글 삭제 시 좋아요 삭제`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = "newPostTitle",
+                content = "newPostContent",
+                tagName = "testTag",
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        preferenceService.postPreferenceManage(
+                postId = createPost.post.id!!,
+                memberId = testMember1.id!!
+        )
+        postService.delete(
+                createPost.post.id!!,
+                testMember1.id!!,
+        )
+        // 2. 비교 및 검증
+        assertThat(postRepository.findById(createPost.post.id!!)).isNull()
+        assertThat(preferenceRepository.findByPostAndMember(createPost.post, testMember1)).isNull()
+    }
+    @Test
+    @Transactional
+    fun `댓글 좋아요 +1`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentService.postCommentCreate(postCommentRequest)
+        preferenceService.commentPreferenceManage(createComment, testMember1.id!!)
+        // 2. 실제 데이터
+        val savedComment = postCommentRepository.findById(createComment)
+        val savedPreference = preferenceRepository.findByCommentAndMember(savedComment!!, testMember1)
+        // 3. 비교 및 검증
+        assertThat(savedComment.preferences!!.size).isEqualTo(1)
+        assertThat(savedPreference).isNotNull()
+    }
+    @Test
+    @Transactional
+    fun `댓글 좋아요 -1`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentService.postCommentCreate(postCommentRequest)
+        preferenceService.commentPreferenceManage(createComment, testMember1.id!!)
+        preferenceService.commentPreferenceManage(createComment, testMember1.id!!)
+        // 2. 실제 데이터
+        val savedComment = postCommentRepository.findById(createComment)
+        val savedPreference = preferenceRepository.findByCommentAndMember(savedComment!!, testMember1)
+        // 3. 비교 및 검증
+        assertThat(savedComment.preferences!!.size).isEqualTo(0)
+        assertThat(savedPreference).isNull()
+    }
+    @Test
+    @Transactional
+    fun `댓글 좋아요 +2`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentService.postCommentCreate(postCommentRequest)
+        preferenceService.commentPreferenceManage(createComment, testMember1.id!!)
+        preferenceService.commentPreferenceManage(createComment, testMember2.id!!)
+        // 2. 실제 데이터
+        val savedComment = postCommentRepository.findById(createComment)
+        val savedPreference = preferenceRepository.findAll()
+        // 3. 비교 및 검증
+        assertThat(savedComment!!.preferences!!.size).isEqualTo(2)
+        assertThat(savedPreference.size).isEqualTo(2)
+    }
+    @Test
+    @Transactional
+    fun `댓글 삭제 시 좋아요 삭제`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentService.postCommentCreate(postCommentRequest)
+        val beforeSavedComment = postCommentRepository.findById(createComment)
+        preferenceService.commentPreferenceManage(createComment, testMember1.id!!)
+        val deleteCommentRequest = PostCommentDeletionRequest(
+                id = createComment,
+                writerId = testMember1,
+        )
+        postCommentService.postCommentDeletion(deleteCommentRequest)
+        // 2. 실제 데이터
+        val savedComment = postCommentRepository.findById(createComment)
+        // 3. 비교 및 검증
+        assertThat(savedComment).isNull()
+        assertThat(preferenceRepository.findByCommentAndMember(beforeSavedComment!!, testMember1)).isNull()
+    }
+    @Test
+    @Transactional
+    fun `대댓글 좋아요 +1`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentService.postCommentCreate(postCommentRequest)
+        val postCommentChildRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testCommentChild",
+                parent = postCommentRepository.findById(createComment)
+        )
+        val createCommentChild = postCommentService.postCommentCreate(postCommentChildRequest)
+        preferenceService.commentPreferenceManage(createCommentChild, testMember1.id!!)
+        // 2. 실제 데이터
+        val savedCommentChild = postCommentRepository.findById(createCommentChild)
+        val savedPreference = preferenceRepository.findByCommentAndMember(savedCommentChild!!, testMember1)
+        // 3. 비교 및 검증
+        assertThat(savedCommentChild.preferences!!.size).isEqualTo(1)
+        assertThat(savedPreference).isNotNull()
+    }
+    @Test
+    @Transactional
+    fun `대댓글 좋아요 -1`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentService.postCommentCreate(postCommentRequest)
+        val postCommentChildRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testCommentChild",
+                parent = postCommentRepository.findById(createComment)
+        )
+        val createCommentChild = postCommentService.postCommentCreate(postCommentChildRequest)
+        preferenceService.commentPreferenceManage(createComment, testMember1.id!!)
+        preferenceService.commentPreferenceManage(createComment, testMember1.id!!)
+        // 2. 실제 데이터
+        val savedCommentChild = postCommentRepository.findById(createCommentChild)
+        val savedPreference = preferenceRepository.findByCommentAndMember(savedCommentChild!!, testMember1)
+        // 3. 비교 및 검증
+        assertThat(savedCommentChild.preferences!!.size).isEqualTo(0)
+        assertThat(savedPreference).isNull()
+    }
+    @Test
+    @Transactional
+    fun `대댓글 좋아요 +2`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentService.postCommentCreate(postCommentRequest)
+        val postCommentChildRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testCommentChild",
+                parent = postCommentRepository.findById(createComment)
+        )
+        val createCommentChild = postCommentService.postCommentCreate(postCommentChildRequest)
+        preferenceService.commentPreferenceManage(createCommentChild, testMember1.id!!)
+        preferenceService.commentPreferenceManage(createCommentChild, testMember2.id!!)
+        // 2. 실제 데이터
+        val savedCommentChild = postCommentRepository.findById(createCommentChild)
+        val savedPreference = preferenceRepository.findAll()
+        // 3. 비교 및 검증
+        assertThat(savedCommentChild!!.preferences!!.size).isEqualTo(2)
+        assertThat(savedPreference.size).isEqualTo(2)
+    }
+    @Test
+    @Transactional
+    fun `대댓글 삭제 시 좋아요 삭제`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentService.postCommentCreate(postCommentRequest)
+        val postCommentChildRequest = PostCommentCreationRequest(
+                post = postRepository.findById(createPost.post.id)!!,
+                writerId = testMember1,
+                content = "testCommentChild",
+                parent = postCommentRepository.findById(createComment)
+        )
+        val createCommentChild = postCommentService.postCommentCreate(postCommentChildRequest)
+        val beforeSavedCommentChild = postCommentRepository.findById(createCommentChild)
+        preferenceService.commentPreferenceManage(createCommentChild, testMember1.id!!)
+        val deleteCommentRequest = PostCommentDeletionRequest(
+                id = createCommentChild,
+                writerId = testMember1,
+        )
+        postCommentService.postCommentDeletion(deleteCommentRequest)
+        // 2. 실제 데이터
+        val savedCommentChild = postCommentRepository.findById(createCommentChild)
+        // 3. 비교 및 검증
+        assertThat(savedCommentChild).isNull()
+        assertThat(preferenceRepository.findByCommentAndMember(beforeSavedCommentChild!!, testMember1)).isNull()
     }
     @Test
     @Transactional

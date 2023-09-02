@@ -2,6 +2,7 @@ package cc.connectcampus.connect_campus.domain.post.controller
 
 import cc.connectcampus.connect_campus.domain.member.domain.CustomUser
 import cc.connectcampus.connect_campus.domain.post.domain.Post
+import cc.connectcampus.connect_campus.domain.post.domain.PostComment
 import cc.connectcampus.connect_campus.domain.post.dto.request.*
 import cc.connectcampus.connect_campus.domain.post.dto.response.*
 import cc.connectcampus.connect_campus.domain.post.service.PostCommentService0
@@ -37,13 +38,20 @@ class PostController (
         val commentUUID = UUID.fromString(commentId)
         return preferenceService.commentPreferenceManage(commentUUID, memberId)
     }
-    @PostMapping("/comment")
-    fun createPostComment(postCommentCreationRequest: PostCommentCreationRequest) : UUID{
-        return postCommentService.postCommentCreate(postCommentCreationRequest)
+    @PostMapping("/post/{postId}/comment")
+    fun createPostComment(@PathVariable postId: String, @RequestBody postCommentCreationRequest: PostCommentCreationRequest, authentication: Authentication) : PostComment{
+        val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
+        val postUUID = UUID.fromString(postId)
+        return postCommentService.postCommentCreate(postUUID, memberId, postCommentCreationRequest)
     }
-    @PostMapping("/comment/{id}")
-    fun createPostCommentChild(postCommentCreationRequest: PostCommentCreationRequest) : UUID{
-        return postCommentService.postCommentCreate(postCommentCreationRequest)
+    @PostMapping("/post/comment-child")
+    fun createPostCommentChild(@RequestParam("postId") postId: String, @RequestParam("commentId") commentId: String,
+                               @RequestBody postCommentCreationRequest: PostCommentCreationRequest, authentication: Authentication) : PostComment{
+        val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
+        val postUUID = UUID.fromString(postId)
+        val commentUUID = UUID.fromString(commentId)
+        postCommentCreationRequest.parent = commentUUID
+        return postCommentService.postCommentCreate(postUUID, memberId, postCommentCreationRequest)
     }
     @GetMapping
     fun getListPost(@RequestParam("page") page: Int) : Page<Post>{

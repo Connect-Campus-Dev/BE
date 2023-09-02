@@ -7,7 +7,7 @@ import cc.connectcampus.connect_campus.domain.post.dto.request.PostCommentUpdate
 import java.util.*
 
 interface PostCommentService {
-    fun postCommentCreate(postCommentCreationRequest: PostCommentCreationRequest) : UUID
+    fun postCommentCreate(postId: UUID, memberId: UUID, postCommentCreationRequest: PostCommentCreationRequest) : PostComment
     fun postCommentUpdate(postCommentUpdateRequest: PostCommentUpdateRequest) : UUID
     fun postCommentDeletion(postCommentDeletionRequest: PostCommentDeletionRequest) : UUID
 }

@@ -770,16 +770,98 @@ class PostTest (
         val createComment = postCommentRepository.findById(postCommentService.postCommentCreate(
                 postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentRequest).id) ?: throw EntityNotFoundException()
         val updateCommentRequest = PostCommentUpdateRequest(
-                id = createComment.id!!,
-                writerId = createComment.writerId,
-                postId = createComment.post,
                 content = "updateComment",
         )
-        val updateComment = postCommentService.postCommentUpdate(updateCommentRequest)
+        val updateComment = postCommentService.postCommentUpdate(createComment.id!!, testMember1.id!!, updateCommentRequest)
         // 2. 실제 데이터
-        val savedComment = postCommentRepository.findById(updateComment) ?: throw EntityNotFoundException()
+        val savedComment = postCommentRepository.findById(updateComment.id) ?: throw EntityNotFoundException()
         // 3. 비교 및 검증
+        assertThat(savedComment.id).isEqualTo(createComment.id)
+        assertThat(savedComment.post).isEqualTo(createPost.post)
         assertThat(savedComment.content).isEqualTo(updateCommentRequest.content)
+        assertThat(savedComment.writerId).isEqualTo(testMember1)
+        assertThat(savedComment.parentId).isEqualTo(createComment.parentId)
+        assertThat(savedComment.createdAt).isEqualTo(createComment.createdAt)
+        assertThat(savedComment.updatedAt).isNotEqualTo(curTime)
+    }
+    @Test
+    @Transactional
+    fun `댓글 수정 필터`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentRepository.findById(postCommentService.postCommentCreate(
+                postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentRequest).id) ?: throw EntityNotFoundException()
+        val updateCommentRequest = PostCommentUpdateRequest(
+                content = "씨발",
+        )
+        // 2. 비교 및 검증
+        assertThrows<PostContentInvalidException> { postCommentService.postCommentUpdate(createComment.id!!, testMember1.id!!, updateCommentRequest) }
+    }
+    @Test
+    @Transactional
+    fun `작성자가 아닌 멤버가 댓글 수정 접근`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentRepository.findById(postCommentService.postCommentCreate(
+                postId = createPost.post.id!!, memberId = testMember2.id!!, postCommentRequest).id) ?: throw EntityNotFoundException()
+        val updateCommentRequest = PostCommentUpdateRequest(
+                content = "updateComment",
+        )
+        // 2. 비교 및 검증
+        assertThrows<HandleAccessException> { postCommentService.postCommentUpdate(createComment.id!!, testMember1.id!!, updateCommentRequest) }
+    }
+    @Test
+    @Transactional
+    fun `대댓글 수정`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                content = "testComment",
+                parent = null,
+        )
+        val createComment = postCommentService.postCommentCreate(postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentRequest)
+        val postCommentChildRequest = PostCommentCreationRequest(
+                content = "testCommentChild",
+                parent = createComment.id!!
+        )
+        val curTime = LocalDateTime.now()
+        val createCommentChild = postCommentService.postCommentCreate(postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentChildRequest)
+        val updateCommentRequest = PostCommentUpdateRequest(
+                content = "updateComment",
+        )
+        postCommentService.postCommentUpdate(createCommentChild.id!!, testMember1.id!!, updateCommentRequest)
+        // 2. 실제 데이터
+        val savedComment = postCommentRepository.findById(createCommentChild.id!!) ?: throw EntityNotFoundException()
+        // 3. 비교 및 검증
+        assertThat(savedComment.id).isEqualTo(createCommentChild.id)
+        assertThat(savedComment.post).isEqualTo(createPost.post)
+        assertThat(savedComment.content).isEqualTo(updateCommentRequest.content)
+        assertThat(savedComment.writerId).isEqualTo(testMember1)
+        assertThat(savedComment.parentId).isEqualTo(createCommentChild.parentId)
+        assertThat(savedComment.createdAt).isEqualTo(createCommentChild.createdAt)
         assertThat(savedComment.updatedAt).isNotEqualTo(curTime)
     }
     @Test

@@ -70,13 +70,11 @@ class PostController (
         val postUUID = UUID.fromString(postId)
         return postService.update(postUUID, postUpdateRequest, memberId)
     }
-    @PutMapping("/comment")
-    fun updatePostComment(postCommentUpdateRequest: PostCommentUpdateRequest) : UUID{
-        return postCommentService.postCommentUpdate(postCommentUpdateRequest)
-    }
-    @PutMapping("/comment/{id}")
-    fun updatePostCommentChild(postCommentUpdateRequest: PostCommentUpdateRequest) : UUID{
-        return postCommentService.postCommentUpdate(postCommentUpdateRequest)
+    @PutMapping("/comment/{commentId}")
+    fun updatePostComment(@PathVariable commentId: String, @RequestBody postCommentUpdateRequest: PostCommentUpdateRequest, authentication: Authentication) : PostComment{
+        val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
+        val commentUUID = UUID.fromString(commentId)
+        return postCommentService.postCommentUpdate(commentUUID, memberId, postCommentUpdateRequest)
     }
     @DeleteMapping("/post/{postId}")
     fun deletePost(@PathVariable postId: String, authentication: Authentication) : Post{

@@ -8,6 +8,6 @@ import java.util.*
 
 interface PostCommentService {
     fun postCommentCreate(postId: UUID, memberId: UUID, postCommentCreationRequest: PostCommentCreationRequest) : PostComment
-    fun postCommentUpdate(postCommentUpdateRequest: PostCommentUpdateRequest) : UUID
+    fun postCommentUpdate(commentId: UUID, memberId: UUID, postCommentUpdateRequest: PostCommentUpdateRequest) : PostComment
     fun postCommentDeletion(postCommentDeletionRequest: PostCommentDeletionRequest) : UUID
 }

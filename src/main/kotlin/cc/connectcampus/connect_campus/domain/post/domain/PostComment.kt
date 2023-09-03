@@ -26,7 +26,7 @@ class PostComment (
         val parentId: PostComment?=null,
 
         @Column(nullable = false)
-        val content: String,
+        var content: String,
 
         @OneToMany(mappedBy = "comment", cascade = [CascadeType.REMOVE])
         val preferences: MutableList<Preference>? = mutableListOf(),
@@ -37,7 +37,7 @@ class PostComment (
 
         @UpdateTimestamp
         @Column(name = "updated_at")
-        val updatedAt: LocalDateTime? = null,
+        var updatedAt: LocalDateTime? = null,
 ){
     companion object{
         fun fixture(

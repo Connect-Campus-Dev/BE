@@ -14,6 +14,7 @@ import cc.connectcampus.connect_campus.global.error.exception.EntityNotFoundExce
 import cc.connectcampus.connect_campus.global.error.exception.HandleAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.UUID
 
 @Service
@@ -41,16 +42,18 @@ class PostCommentService0 (
         return postCommentRepository.save(createPostComment)
     }
 
-    override fun postCommentUpdate(postCommentUpdateRequest: PostCommentUpdateRequest): UUID {
-        postCommentRepository.findById(postCommentUpdateRequest.id)
+    override fun postCommentUpdate(commentId: UUID, memberId: UUID, postCommentUpdateRequest: PostCommentUpdateRequest): PostComment {
+        //댓글 호출
+        val savedComment = postCommentRepository.findById(commentId) ?: throw EntityNotFoundException()
+        //멤버 호출
+        val savedMember = memberRepository.findById(memberId) ?: throw EntityNotFoundException()
+        //작성자 검증
+        if(savedMember!=savedComment.writerId) throw HandleAccessException()
+        //수정 내용 검증
         if(InputFilter.isInputNotValid(postCommentUpdateRequest.content)) throw PostContentInvalidException()
-        val updatePostComment = PostComment(
-                id = postCommentUpdateRequest.id,
-                post = postCommentUpdateRequest.postId,
-                writerId = postCommentUpdateRequest.writerId,
-                content = postCommentUpdateRequest.content,
-        )
-        return postCommentRepository.save(updatePostComment).id!!
+        savedComment.content = postCommentUpdateRequest.content
+        savedComment.updatedAt = LocalDateTime.now()
+        return postCommentRepository.save(savedComment)
     }
 
     override fun postCommentDeletion(postCommentDeletionRequest: PostCommentDeletionRequest): UUID {

@@ -4,9 +4,7 @@ import cc.connectcampus.connect_campus.domain.member.repository.MemberRepository
 import cc.connectcampus.connect_campus.domain.model.InputFilter
 import cc.connectcampus.connect_campus.domain.post.domain.PostComment
 import cc.connectcampus.connect_campus.domain.post.dto.request.PostCommentCreationRequest
-import cc.connectcampus.connect_campus.domain.post.dto.request.PostCommentDeletionRequest
 import cc.connectcampus.connect_campus.domain.post.dto.request.PostCommentUpdateRequest
-import cc.connectcampus.connect_campus.domain.post.exception.PostCommentLengthInvalid
 import cc.connectcampus.connect_campus.domain.post.exception.PostContentInvalidException
 import cc.connectcampus.connect_campus.domain.post.repository.PostCommentRepository
 import cc.connectcampus.connect_campus.domain.post.repository.PostRepository
@@ -56,13 +54,14 @@ class PostCommentService0 (
         return postCommentRepository.save(savedComment)
     }
 
-    override fun postCommentDeletion(postCommentDeletionRequest: PostCommentDeletionRequest): UUID {
-        //데이터 검증
-        val postComment = postCommentRepository.findById(postCommentDeletionRequest.id) ?: throw EntityNotFoundException()
-        //작성자 ID 검증
-        if (postComment.writerId!=postCommentDeletionRequest.writerId) throw HandleAccessException()
-        postCommentRepository.delete(postComment)
-        return postComment.id!!
+    override fun postCommentDeletion(commentId: UUID, memberId: UUID): PostComment {
+        //댓글 호출
+        val savedComment = postCommentRepository.findById(commentId) ?: throw EntityNotFoundException()
+        //멤버 호출
+        val savedMember = memberRepository.findById(memberId) ?: throw EntityNotFoundException()
+        //작성자 검증
+        if(savedMember!=savedComment.writerId) throw HandleAccessException()
+        postCommentRepository.delete(savedComment)
+        return savedComment
     }
-
 }

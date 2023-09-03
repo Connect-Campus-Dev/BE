@@ -572,11 +572,7 @@ class PostTest (
         val createComment = postCommentService.postCommentCreate(postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentRequest)
         val beforeSavedComment = postCommentRepository.findById(createComment.id!!)
         preferenceService.commentPreferenceManage(createComment.id!!, testMember1.id!!)
-        val deleteCommentRequest = PostCommentDeletionRequest(
-                id = createComment.id!!,
-                writerId = testMember1,
-        )
-        postCommentService.postCommentDeletion(deleteCommentRequest)
+        postCommentService.postCommentDeletion(createComment.id!!, testMember1.id!!)
         // 2. 실제 데이터
         val savedComment = postCommentRepository.findById(createComment.id!!)
         // 3. 비교 및 검증
@@ -691,11 +687,7 @@ class PostTest (
         val createCommentChild = postCommentService.postCommentCreate(postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentChildRequest)
         val beforeSavedCommentChild = postCommentRepository.findById(createCommentChild.id!!)
         preferenceService.commentPreferenceManage(createCommentChild.id!!, testMember1.id!!)
-        val deleteCommentRequest = PostCommentDeletionRequest(
-                id = createCommentChild.id!!,
-                writerId = testMember1,
-        )
-        postCommentService.postCommentDeletion(deleteCommentRequest)
+        postCommentService.postCommentDeletion(createCommentChild.id!!, testMember1.id!!)
         // 2. 실제 데이터
         val savedCommentChild = postCommentRepository.findById(createCommentChild.id!!)
         // 3. 비교 및 검증
@@ -879,13 +871,49 @@ class PostTest (
                 parent = null,
         )
         val saveComment = postCommentService.postCommentCreate(postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentRequest)
-        val savedComment = postCommentRepository.findById(saveComment.id) ?: throw EntityNotFoundException()
-        val deleteCommentRequest = PostCommentDeletionRequest(
-                id = savedComment.id!!,
-                writerId = testMember1,
-        )
-        val deleteComment = postCommentService.postCommentDeletion(deleteCommentRequest)
+        val deleteComment = postCommentService.postCommentDeletion(saveComment.id!!, testMember1.id!!)
         // 2. 비교 및 검증
-        assertThat(postCommentRepository.findById(deleteComment)).isNull()
+        assertThat(postCommentRepository.findById(deleteComment.id)).isNull()
+    }
+    @Test
+    @Transactional
+    fun `작성자가 아닌 회원이 댓글 삭제`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+            title = testPost.title,
+            content = testPost.content,
+            tagName = testPost.tagId.tagName,
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+            content = "testComment",
+            parent = null,
+        )
+        val saveComment = postCommentService.postCommentCreate(postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentRequest)
+        // 2. 비교 및 검증
+        assertThrows<HandleAccessException> { postCommentService.postCommentDeletion(saveComment.id!!, testMember2.id!!) }
+    }
+    @Test
+    @Transactional
+    fun `대댓글 삭제`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+                title = testPost.title,
+                content = testPost.content,
+                tagName = testPost.tagId.tagName
+        )
+        val createPost = postService.create(postCreationRequest, testMember1.id!!)
+        val postCommentRequest = PostCommentCreationRequest(
+                content = "testComment"
+        )
+        val saveComment = postCommentService.postCommentCreate(postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentRequest)
+        val postCommentChildRequest = PostCommentCreationRequest(
+                content = "testCommentChild",
+                parent = saveComment.id!!
+        )
+        val saveCommentChild = postCommentService.postCommentCreate(postId = createPost.post.id!!, memberId = testMember1.id!!, postCommentChildRequest)
+        val deleteCommentChild = postCommentService.postCommentDeletion(saveCommentChild.id!!, testMember1.id!!)
+        // 2. 비교 및 검증
+        assertThat(postCommentRepository.findById(deleteCommentChild.id)).isNull()
     }
 }

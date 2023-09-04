@@ -1,7 +1,6 @@
 package cc.connectcampus.connect_campus.domain.post.controller
 
 import cc.connectcampus.connect_campus.domain.member.domain.CustomUser
-import cc.connectcampus.connect_campus.domain.post.domain.Post
 import cc.connectcampus.connect_campus.domain.post.domain.PostComment
 import cc.connectcampus.connect_campus.domain.post.dto.request.*
 import cc.connectcampus.connect_campus.domain.post.dto.response.*
@@ -22,7 +21,7 @@ class PostController (
         val postCommentService: PostCommentService0,
 ){
     @PostMapping("/post")
-    fun createPost(@RequestBody postCreationRequest: PostCreationRequest, authentication: Authentication) : PostDetailResponse{
+    fun createPost(@RequestBody postCreationRequest: PostCreationRequest, authentication: Authentication) : PostResponse{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
         return postService.create(postCreationRequest, memberId)
     }
@@ -39,14 +38,15 @@ class PostController (
         return preferenceService.commentPreferenceManage(commentUUID, memberId)
     }
     @PostMapping("/post/{postId}/comment")
-    fun createPostComment(@PathVariable postId: String, @RequestBody postCommentCreationRequest: PostCommentCreationRequest, authentication: Authentication) : PostComment{
+    fun createPostComment(@PathVariable postId: String, @RequestBody postCommentCreationRequest: PostCommentCreationRequest,
+                          authentication: Authentication) : PostCommentResponse{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
         val postUUID = UUID.fromString(postId)
         return postCommentService.postCommentCreate(postUUID, memberId, postCommentCreationRequest)
     }
     @PostMapping("/post/comment-child")
     fun createPostCommentChild(@RequestParam("postId") postId: String, @RequestParam("commentId") commentId: String,
-                               @RequestBody postCommentCreationRequest: PostCommentCreationRequest, authentication: Authentication) : PostComment{
+                               @RequestBody postCommentCreationRequest: PostCommentCreationRequest, authentication: Authentication) : PostCommentResponse{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
         val postUUID = UUID.fromString(postId)
         val commentUUID = UUID.fromString(commentId)
@@ -54,7 +54,7 @@ class PostController (
         return postCommentService.postCommentCreate(postUUID, memberId, postCommentCreationRequest)
     }
     @GetMapping
-    fun getListPost(@RequestParam("page") page: Int) : Page<Post>{
+    fun getListPost(@RequestParam("page") page: Int) : Page<PostResponse>{
         return postService.readList(page)
     }
     @GetMapping("/post/{postId}")
@@ -65,25 +65,26 @@ class PostController (
         return postService.readSingle(postUUID, memberId)
     }
     @PutMapping("/post/{postId}")
-    fun updatePost(@PathVariable postId: String, @RequestBody postUpdateRequest: PostUpdateRequest, authentication: Authentication) : PostDetailResponse{
+    fun updatePost(@PathVariable postId: String, @RequestBody postUpdateRequest: PostUpdateRequest, authentication: Authentication) : PostResponse{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
         val postUUID = UUID.fromString(postId)
         return postService.update(postUUID, postUpdateRequest, memberId)
     }
     @PutMapping("/comment/{commentId}")
-    fun updatePostComment(@PathVariable commentId: String, @RequestBody postCommentUpdateRequest: PostCommentUpdateRequest, authentication: Authentication) : PostComment{
+    fun updatePostComment(@PathVariable commentId: String, @RequestBody postCommentUpdateRequest: PostCommentUpdateRequest,
+                          authentication: Authentication) : PostCommentResponse{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
         val commentUUID = UUID.fromString(commentId)
         return postCommentService.postCommentUpdate(commentUUID, memberId, postCommentUpdateRequest)
     }
     @DeleteMapping("/post/{postId}")
-    fun deletePost(@PathVariable postId: String, authentication: Authentication) : Post{
+    fun deletePost(@PathVariable postId: String, authentication: Authentication) : PostResponse{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
         val postUUID = UUID.fromString(postId)
         return postService.delete(postUUID, memberId)
     }
     @DeleteMapping("/comment/{commentId}")
-    fun deletePostComment(@PathVariable commentId: String, authentication: Authentication) : PostComment{
+    fun deletePostComment(@PathVariable commentId: String, authentication: Authentication) : PostCommentResponse{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()
         val commentUUID = UUID.fromString(commentId)
         return postCommentService.postCommentDeletion(commentUUID, memberId)

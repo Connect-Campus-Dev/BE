@@ -5,6 +5,7 @@ import cc.connectcampus.connect_campus.domain.model.InputFilter
 import cc.connectcampus.connect_campus.domain.post.domain.PostComment
 import cc.connectcampus.connect_campus.domain.post.dto.request.PostCommentCreationRequest
 import cc.connectcampus.connect_campus.domain.post.dto.request.PostCommentUpdateRequest
+import cc.connectcampus.connect_campus.domain.post.dto.response.PostCommentResponse
 import cc.connectcampus.connect_campus.domain.post.exception.PostContentInvalidException
 import cc.connectcampus.connect_campus.domain.post.repository.PostCommentRepository
 import cc.connectcampus.connect_campus.domain.post.repository.PostRepository
@@ -22,7 +23,7 @@ class PostCommentService0 (
         val memberRepository: MemberRepository,
 ): PostCommentService{
     @Transactional
-    override fun postCommentCreate(postId: UUID, memberId: UUID, postCommentCreationRequest: PostCommentCreationRequest) : PostComment {
+    override fun postCommentCreate(postId: UUID, memberId: UUID, postCommentCreationRequest: PostCommentCreationRequest) : PostCommentResponse {
         //게시글 검증
         val savedPost = postRepository.findById(postId) ?: throw EntityNotFoundException()
         //멤버 불러오기
@@ -37,10 +38,17 @@ class PostCommentService0 (
                 content = postCommentCreationRequest.content,
                 parentId = savedComment,
         )
-        return postCommentRepository.save(createPostComment)
+        val saveComment = postCommentRepository.findById(postCommentRepository.save(createPostComment).id!!) ?: throw EntityNotFoundException()
+        return PostCommentResponse(
+                commentId = saveComment.id!!,
+                content = saveComment.content,
+                writerNickname = "익명",
+                createdAt = saveComment.createdAt.toString(),
+                preferenceCount = saveComment.preferences!!.size,
+        )
     }
 
-    override fun postCommentUpdate(commentId: UUID, memberId: UUID, postCommentUpdateRequest: PostCommentUpdateRequest): PostComment {
+    override fun postCommentUpdate(commentId: UUID, memberId: UUID, postCommentUpdateRequest: PostCommentUpdateRequest): PostCommentResponse {
         //댓글 호출
         val savedComment = postCommentRepository.findById(commentId) ?: throw EntityNotFoundException()
         //멤버 호출
@@ -51,10 +59,17 @@ class PostCommentService0 (
         if(InputFilter.isInputNotValid(postCommentUpdateRequest.content)) throw PostContentInvalidException()
         savedComment.content = postCommentUpdateRequest.content
         savedComment.updatedAt = LocalDateTime.now()
-        return postCommentRepository.save(savedComment)
+        val saveComment = postCommentRepository.findById(postCommentRepository.save(savedComment).id!!) ?: throw EntityNotFoundException()
+        return PostCommentResponse(
+            commentId = saveComment.id!!,
+            content = saveComment.content,
+            writerNickname = "익명",
+            createdAt = saveComment.updatedAt.toString(),
+            preferenceCount = saveComment.preferences!!.size,
+        )
     }
 
-    override fun postCommentDeletion(commentId: UUID, memberId: UUID): PostComment {
+    override fun postCommentDeletion(commentId: UUID, memberId: UUID): PostCommentResponse {
         //댓글 호출
         val savedComment = postCommentRepository.findById(commentId) ?: throw EntityNotFoundException()
         //멤버 호출
@@ -62,6 +77,12 @@ class PostCommentService0 (
         //작성자 검증
         if(savedMember!=savedComment.writerId) throw HandleAccessException()
         postCommentRepository.delete(savedComment)
-        return savedComment
+        return PostCommentResponse(
+            commentId = savedComment.id!!,
+            content = savedComment.content,
+            writerNickname = "익명",
+            createdAt = savedComment.createdAt.toString(),
+            preferenceCount = savedComment.preferences!!.size,
+        )
     }
 }

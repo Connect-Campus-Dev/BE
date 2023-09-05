@@ -185,7 +185,24 @@ class PostServiceV0 (
                 createdAt = postDetail.createdAt!!.toString(),
         )
     }
-
+    @Transactional
+    override fun getListByTag(tagUUID: UUID, page: Int): Page<PostResponse> {
+        //태그 불러오기
+        val postTag = postTagRepository.findById(tagUUID) ?: throw EntityNotFoundException()
+        val pageable: Pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending())
+        return postRepository.findAllByTagId(postTag, pageable).map {
+            PostResponse(
+                    postId = it.id!!,
+                    title = it.title,
+                    content = it.content,
+                    writerNickname = univService.getSchoolNameByEmailDomain(it.writerId.email),
+                    tagName = it.tagId.tagName,
+                    preferenceCount = it.preferences!!.size,
+                    viewCount = it.viewCount,
+                    createdAt = formatTimeAgo(it.createdAt!!, it.updatedAt!!),
+            )
+        }
+    }
     fun tagToPost(tagName: String): PostTag {
         return postTagRepository.findByTagName(tagName) ?: throw PostTagInvalidException()
     }

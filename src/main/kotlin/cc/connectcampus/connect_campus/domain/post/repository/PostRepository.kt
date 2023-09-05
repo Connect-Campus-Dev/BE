@@ -1,6 +1,7 @@
 package cc.connectcampus.connect_campus.domain.post.repository
 
 import cc.connectcampus.connect_campus.domain.post.domain.Post
+import cc.connectcampus.connect_campus.domain.post.domain.PostTag
 import cc.connectcampus.connect_campus.domain.post.dto.request.PostUpdateRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -14,4 +15,5 @@ interface PostRepository : JpaRepository<Post, Long>, PagingAndSortingRepository
     fun findById(id: UUID?): Post?
     fun save(postUpdateRequest: PostUpdateRequest): UUID
     override fun findAll(pageable: Pageable): Page<Post>
+    fun findAllByTagId(tagId: PostTag, pageable: Pageable): Page<Post>
 }

@@ -57,6 +57,11 @@ class PostController (
     fun getListPost(@RequestParam("page") page: Int) : Page<PostResponse>{
         return postService.readList(page)
     }
+    @GetMapping("/{tagId}")
+    fun getListPostByTag(@PathVariable tagId: String, @RequestParam("page") page: Int) : Page<PostResponse>{
+        val tagUUID = UUID.fromString(tagId)
+        return postService.getListByTag(tagUUID, page)
+    }
     @GetMapping("/post/{postId}")
     fun getSinglePost(@PathVariable postId: String, authentication: Authentication) : PostResponse{
         //로그인 안한 멤버가 페이지 확인할 경우 조회수 count를 안하기 위해 memberId null로 반환

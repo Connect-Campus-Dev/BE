@@ -979,4 +979,49 @@ class PostTest (
         assertThat(getPostSingle.commentList!![0].childComments!![0].writerNickname).isEqualTo("글쓴이")
         assertThat(getPostSingle.commentList!![0].childComments!![1].writerNickname).isEqualTo("익명2")
     }
+    @Test
+    @Transactional
+    fun `tag별 게시글 list 가져오기`(){
+        // 1. 예상 데이터
+        val postTagCreation = PostTag(
+            tagName = "diffTag",
+        )
+        val createPostTag = postTagRepository.save(postTagCreation)
+        val postCreationRequest = PostCreationRequest(
+            title = "newPostTitle",
+            content = "newPostContent",
+            tagName = "testTag",
+        )
+        postService.create(postCreationRequest, testMember1.id!!)
+        postService.create(postCreationRequest, testMember1.id!!)
+        postService.create(postCreationRequest, testMember1.id!!)
+        val diffPostCreationRequest = PostCreationRequest(
+            title = "diffPostTitle",
+            content = "diffPostContent",
+            tagName = "diffTag",
+        )
+        postService.create(diffPostCreationRequest, testMember1.id!!)
+        postService.create(diffPostCreationRequest, testMember1.id!!)
+        postService.create(diffPostCreationRequest, testMember1.id!!)
+        // 2. 실제 데이터
+        val getDiffPostList = postService.getListByTag(createPostTag.id!!, 0)
+        val getTestPostList = postService.getListByTag(postTag.id!!, 0)
+        val getPostList = postService.readList(0)
+        // 3. 비교 및 검증
+        assertThat(getPostList.content.size).isEqualTo(6)
+        assertThat(getDiffPostList.content.size).isEqualTo(3)
+        assertThat(getDiffPostList.content[0].title).isEqualTo(diffPostCreationRequest.title)
+        assertThat(getDiffPostList.content[0].content).isEqualTo(diffPostCreationRequest.content)
+        assertThat(getDiffPostList.content[0].tagName).isEqualTo(diffPostCreationRequest.tagName)
+        assertThat(getDiffPostList.content[0].writerNickname).isEqualTo(univService.getSchoolNameByEmailDomain(testMember1.email))
+        assertThat(getDiffPostList.content[0].commentCount).isEqualTo(0)
+        assertThat(getDiffPostList.content[0].viewCount).isEqualTo(0)
+        assertThat(getTestPostList.content.size).isEqualTo(3)
+        assertThat(getTestPostList.content[0].title).isEqualTo(postCreationRequest.title)
+        assertThat(getTestPostList.content[0].content).isEqualTo(postCreationRequest.content)
+        assertThat(getTestPostList.content[0].tagName).isEqualTo(postCreationRequest.tagName)
+        assertThat(getTestPostList.content[0].writerNickname).isEqualTo(univService.getSchoolNameByEmailDomain(testMember1.email))
+        assertThat(getTestPostList.content[0].commentCount).isEqualTo(0)
+        assertThat(getTestPostList.content[0].viewCount).isEqualTo(0)
+    }
 }

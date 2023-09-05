@@ -12,5 +12,6 @@ interface PostService {
     fun readSingle(postId: UUID, memberId: UUID?) : PostResponse
     fun update(postId: UUID, postUpdateRequest: PostUpdateRequest, memberId: UUID) : PostResponse
     fun delete(postId: UUID, memberId: UUID) : PostResponse
+    fun getListByTag(tagUUID: UUID, page: Int): Page<PostResponse>
 
 }

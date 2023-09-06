@@ -6,6 +6,7 @@ import cc.connectcampus.connect_campus.domain.post.dto.request.PostUpdateRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 import java.util.UUID
@@ -16,4 +17,10 @@ interface PostRepository : JpaRepository<Post, Long>, PagingAndSortingRepository
     fun save(postUpdateRequest: PostUpdateRequest): UUID
     override fun findAll(pageable: Pageable): Page<Post>
     fun findAllByTagId(tagId: PostTag, pageable: Pageable): Page<Post>
+
+    @Query("SELECT p FROM Post p WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword% order by p.createdAt desc")
+    fun searchByTitleAndContentContaining(keyword: String, pageable: Pageable): Page<Post>
+
+//    @Query(value = "SELECT * FROM post WHERE MATCH(title, content) AGAINST(:keyword IN BOOLEAN MODE)", nativeQuery = true)
+//    fun searchPost(keyword: String, pageable: Pageable): Page<Post>
 }

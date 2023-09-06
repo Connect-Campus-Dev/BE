@@ -13,5 +13,5 @@ interface PostService {
     fun update(postId: UUID, postUpdateRequest: PostUpdateRequest, memberId: UUID) : PostResponse
     fun delete(postId: UUID, memberId: UUID) : PostResponse
     fun getListByTag(tagUUID: UUID, page: Int): Page<PostResponse>
-
+    fun searchPost(searchWord: String?, page: Int): Page<PostResponse>
 }

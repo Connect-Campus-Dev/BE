@@ -16,6 +16,8 @@ import cc.connectcampus.connect_campus.domain.post.repository.PostTagRepository
 import cc.connectcampus.connect_campus.domain.univ.service.UnivService
 import cc.connectcampus.connect_campus.global.error.exception.EntityNotFoundException
 import cc.connectcampus.connect_campus.global.error.exception.HandleAccessException
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotBlank
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -200,6 +202,24 @@ class PostServiceV0 (
                     preferenceCount = it.preferences!!.size,
                     viewCount = it.viewCount,
                     createdAt = formatTimeAgo(it.createdAt!!, it.updatedAt!!),
+            )
+        }
+    }
+
+    @Transactional
+    override fun searchPost(@NotBlank searchWord: String?, page: Int): Page<PostResponse> {
+        if ( searchWord == null || searchWord == "") throw PostSearchInvalidException()
+        val pageable: Pageable = PageRequest.of(page, 10)
+        return postRepository.searchByTitleAndContentContaining(searchWord, pageable).map {
+            PostResponse(
+                postId = it.id!!,
+                title = it.title,
+                content = it.content,
+                writerNickname = univService.getSchoolNameByEmailDomain(it.writerId.email),
+                tagName = it.tagId.tagName,
+                preferenceCount = it.preferences!!.size,
+                viewCount = it.viewCount,
+                createdAt = formatTimeAgo(it.createdAt!!, it.updatedAt!!),
             )
         }
     }

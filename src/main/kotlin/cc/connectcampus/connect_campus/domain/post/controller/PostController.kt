@@ -69,6 +69,10 @@ class PostController (
         val postUUID = UUID.fromString(postId)
         return postService.readSingle(postUUID, memberId)
     }
+    @GetMapping("/post/search/{keyword}")
+    fun searchPost(@PathVariable keyword: String?, @RequestParam("page") page: Int) : Page<PostResponse>{
+        return postService.searchPost(keyword, page)
+    }
     @PutMapping("/post/{postId}")
     fun updatePost(@PathVariable postId: String, @RequestBody postUpdateRequest: PostUpdateRequest, authentication: Authentication) : PostResponse{
         val memberId: UUID = (authentication.principal as CustomUser).id ?: throw InvalidTokenException()

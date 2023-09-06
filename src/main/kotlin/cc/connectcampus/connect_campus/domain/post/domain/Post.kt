@@ -5,6 +5,7 @@ import jakarta.persistence.*
 import org.hibernate.annotations.ColumnDefault
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import org.springframework.data.jpa.repository.Query
 import java.time.LocalDateTime
 import java.util.*
 

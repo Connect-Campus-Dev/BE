@@ -1024,4 +1024,45 @@ class PostTest (
         assertThat(getTestPostList.content[0].commentCount).isEqualTo(0)
         assertThat(getTestPostList.content[0].viewCount).isEqualTo(0)
     }
+    @Test
+    @Transactional
+    fun `검색 기능`(){
+        // 1. 예상 데이터
+        val postTagCreation = PostTag(
+            tagName = "diffTag",
+        )
+        postTagRepository.save(postTagCreation)
+        val postCreationRequest = PostCreationRequest(
+            title = "newPostTitle",
+            content = "newPostContent",
+            tagName = "testTag",
+        )
+        postService.create(postCreationRequest, testMember1.id!!)
+        postService.create(postCreationRequest, testMember1.id!!)
+        postService.create(postCreationRequest, testMember1.id!!)
+        val diffPostCreationRequest = PostCreationRequest(
+            title = "diffPostTitle",
+            content = "diffPostContent",
+            tagName = "diffTag",
+        )
+        postService.create(diffPostCreationRequest, testMember1.id!!)
+        postService.create(diffPostCreationRequest, testMember1.id!!)
+        postService.create(diffPostCreationRequest, testMember1.id!!)
+        val uniquePostCreationRequest = PostCreationRequest(
+            title = "uniquePostTitle",
+            content = "diffPostContent",
+            tagName = "diffTag",
+        )
+        postService.create(uniquePostCreationRequest, testMember1.id!!)
+        // 2. 실제 데이터
+        val searchPost = postService.searchPost("unique", 0)
+        // 3. 비교 및 검증
+        assertThat(searchPost.content.size).isEqualTo(1)
+        assertThat(searchPost.content[0].title).isEqualTo(uniquePostCreationRequest.title)
+        assertThat(searchPost.content[0].content).isEqualTo(uniquePostCreationRequest.content)
+        assertThat(searchPost.content[0].tagName).isEqualTo(uniquePostCreationRequest.tagName)
+        assertThat(searchPost.content[0].writerNickname).isEqualTo(univService.getSchoolNameByEmailDomain(testMember1.email))
+        assertThat(searchPost.content[0].commentCount).isEqualTo(0)
+        assertThat(searchPost.content[0].viewCount).isEqualTo(0)
+    }
 }

@@ -59,5 +59,5 @@ enum class ErrorCode(
     POST_TITLE_VALUE_INVALID(400, "P004", "제목이 부적절해요."),
     POST_CONTENT_VALUE_INVALID(400, "P005", "부적절한 내용이에요."),
     POST_COMMENT_LENGTH_INVALID(400, "P006","댓글 내용은 2글자 이상이여야 해요."),
-
+    POST_SEARCH_INVALID(400, "P007", "검색어를 입력해주세요."),
 }

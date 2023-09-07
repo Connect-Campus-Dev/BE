@@ -144,6 +144,32 @@ class PostTest (
     }
     @Test
     @Transactional
+    fun `삭제된 게시글 제외하고 목록 가져오기`(){
+        // 1. 예상 데이터
+        val postCreationRequest = PostCreationRequest(
+            title = "newPostTitle",
+            content = "newPostContent",
+            tagName = "testTag",
+        )
+        val savedPost = postService.createPost(postCreationRequest, testMember1.id!!)
+        repeat(9){
+            postService.createPost(postCreationRequest, testMember1.id!!)
+        }
+        postService.deletePost(
+            savedPost.postId,
+            testMember1.id!!,
+        )
+        // 2. 실제 데이터
+        val postList = postService.getPostList(0)
+        // 3. 비교 및 검증
+        assertThat(postList.totalElements).isEqualTo(9)
+        // postList.content의 각 항목이 null이 아닌지 검증
+        repeat(9) {
+            assertThat(postList.content[it].content).isNotNull
+        }
+    }
+    @Test
+    @Transactional
     fun `새로고침 후 다음 페이지 불러오기`(){
         // 1. 예상 데이터
         val nextCreationRequest = PostCreationRequest(
@@ -293,7 +319,7 @@ class PostTest (
         assertThat(savedPost.preferences.size).isEqualTo(0)
         assertThat(savedPost.viewCount).isEqualTo(0)
     }
-    //삭제(데이터 유무, 로그인 유무)
+
     @Test
     @Transactional
     fun `post 삭제`() {
@@ -311,8 +337,8 @@ class PostTest (
                 testMember1.id!!,
         )
         // 2. 비교 및 검증
-        val check = postRepository.findById(createPost.id)
-        assertThat(check).isNull()
+        val savedPost = postRepository.findById(createPost.id)
+        assertThat(savedPost!!.isDeleted).isTrue()
     }
     @Test
     @Transactional
@@ -418,28 +444,6 @@ class PostTest (
         // 2. 비교 및 검증
         assertThat(resultPreference).isEqualTo(2)
         assertThat(preferenceRepository.findAll().count()).isEqualTo(2)
-    }
-    @Test
-    @Transactional
-    fun `게시글 삭제 시 좋아요 삭제`(){
-        // 1. 예상 데이터
-        val postCreationRequest = PostCreationRequest(
-                title = "newPostTitle",
-                content = "newPostContent",
-                tagName = "testTag",
-        )
-        val createPost = postService.createPost(postCreationRequest, testMember1.id!!)
-        preferenceService.preferPost(
-                postId = createPost.postId,
-                memberId = testMember1.id!!
-        )
-        postService.deletePost(
-                createPost.postId,
-                testMember1.id!!,
-        )
-        // 2. 비교 및 검증
-        assertThat(postRepository.findById(createPost.postId)).isNull()
-        assertThat(preferenceRepository.findAll()).isEmpty()
     }
     @Test
     @Transactional
@@ -946,6 +950,42 @@ class PostTest (
         assertThat(getTestPostList.content[0].writerSchoolName).isEqualTo(univService.getSchoolNameByEmailDomain(testMember1.email))
         assertThat(getTestPostList.content[0].commentCount).isEqualTo(0)
         assertThat(getTestPostList.content[0].viewCount).isEqualTo(0)
+    }
+    @Test
+    @Transactional
+    fun `tag별 게시글 목록 가져오기 삭제 글 예외로 가져오기`(){
+        // 1. 예상 데이터
+        val postTagCreation = PostTag(
+            tagName = "diffTag",
+        )
+        postTagRepository.save(postTagCreation)
+        val postCreationRequest = PostCreationRequest(
+            title = "newPostTitle",
+            content = "newPostContent",
+            tagName = "testTag",
+        )
+        val savedPost = postService.createPost(postCreationRequest, testMember1.id!!)
+        postService.createPost(postCreationRequest, testMember1.id!!)
+        postService.createPost(postCreationRequest, testMember1.id!!)
+
+        postService.deletePost(savedPost.postId, testMember1.id!!)
+
+        val diffPostCreationRequest = PostCreationRequest(
+            title = "diffPostTitle",
+            content = "diffPostContent",
+            tagName = "diffTag",
+        )
+        postService.createPost(diffPostCreationRequest, testMember1.id!!)
+        postService.createPost(diffPostCreationRequest, testMember1.id!!)
+        postService.createPost(diffPostCreationRequest, testMember1.id!!)
+        // 2. 실제 데이터
+        val getDiffPostList = postService.getPostListByTag(postTagCreation.tagName, 0)
+        val getTestPostList = postService.getPostListByTag(postTag.tagName, 0)
+        val getPostList = postService.getPostList(0)
+        // 3. 비교 및 검증
+        assertThat(getPostList.content.size).isEqualTo(5)
+        assertThat(getDiffPostList.content.size).isEqualTo(3)
+        assertThat(getTestPostList.content.size).isEqualTo(2)
     }
     @Test
     @Transactional

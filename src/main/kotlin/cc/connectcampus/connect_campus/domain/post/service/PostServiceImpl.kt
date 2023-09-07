@@ -66,7 +66,25 @@ class PostServiceImpl(
     @Transactional
     fun getPostList(page: Int): Page<PostResponse> {
         val pageable: Pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending())
-        return postRepository.findAll(pageable).map {
+        return postRepository.findAllByIsDeletedFalse(pageable).map {
+            PostResponse(
+                postId = it.id!!,
+                title = it.title,
+                content = it.content,
+                writerSchoolName = univService.getSchoolNameByEmailDomain(it.writer.email),
+                tagName = it.tag.tagName,
+                preferenceCount = it.preferences.size,
+                viewCount = it.viewCount,
+                createdAt = formatTimeAgo(it.createdAt, it.updatedAt),
+            )
+        }
+    }
+
+    @Transactional
+    fun getPostListByTag(tagName: String, page: Int): Page<PostResponse> {
+        val postTag = postTagRepository.findByTagName(tagName) ?: throw PostTagInvalidException()
+        val pageable: Pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending())
+        return postRepository.findAllByTagAndIsDeletedFalse(postTag, pageable).map {
             PostResponse(
                 postId = it.id!!,
                 title = it.title,
@@ -83,6 +101,9 @@ class PostServiceImpl(
     @Transactional
     fun getPostDetail(postId: UUID, memberId: UUID): PostResponse {
         val postDetail = postRepository.findById(postId) ?: throw EntityNotFoundException()
+
+        if (postDetail.isDeleted) throw EntityNotFoundException()
+
         val commentList = postCommentRepository.findAllByPost(postDetail)
 
         val redisKey = postDetail.id.toString()
@@ -138,7 +159,7 @@ class PostServiceImpl(
         val postDetail = postRepository.findById(postId) ?: throw EntityNotFoundException()
         if (postDetail.writer.id != memberId) throw HandleAccessException()
 
-        postRepository.delete(postDetail)
+        postDetail.isDeleted = true
 
         return PostResponse(
             postId = postDetail.id!!,
@@ -150,24 +171,6 @@ class PostServiceImpl(
             viewCount = postDetail.viewCount,
             createdAt = postDetail.createdAt.toString(),
         )
-    }
-
-    @Transactional
-    fun getPostListByTag(tagName: String, page: Int): Page<PostResponse> {
-        val postTag = postTagRepository.findByTagName(tagName) ?: throw PostTagInvalidException()
-        val pageable: Pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending())
-        return postRepository.findAllByTag(postTag, pageable).map {
-            PostResponse(
-                postId = it.id!!,
-                title = it.title,
-                content = it.content,
-                writerSchoolName = univService.getSchoolNameByEmailDomain(it.writer.email),
-                tagName = it.tag.tagName,
-                preferenceCount = it.preferences.size,
-                viewCount = it.viewCount,
-                createdAt = formatTimeAgo(it.createdAt, it.updatedAt),
-            )
-        }
     }
 
     @Transactional

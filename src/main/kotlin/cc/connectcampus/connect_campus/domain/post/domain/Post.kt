@@ -40,6 +40,10 @@ class Post(
     @ColumnDefault("0")
     @Column(name = "view_cnt", nullable = false)
     var viewCount: Int,
+
+    @Column
+    var isDeleted: Boolean = false,
+
 ) {
     companion object {
         fun fixture(

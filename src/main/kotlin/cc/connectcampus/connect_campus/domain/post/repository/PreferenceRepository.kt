@@ -8,9 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface PreferenceRepository : JpaRepository<Preference, Long>{
-    fun existsByPostAndMember(post: Post, member: Member) : Boolean
-    fun findByPostAndMember(post: Post, member: Member) : Preference?
-    fun existsByCommentAndMember(comment: PostComment, member: Member) : Boolean
-    fun findByCommentAndMember(comment: PostComment, member: Member) : Preference?
+interface PreferenceRepository : JpaRepository<Preference, Long> {
+    fun findByPostAndMember(post: Post, member: Member): Preference?
+    fun findByCommentAndMember(comment: PostComment, member: Member): Preference?
 }

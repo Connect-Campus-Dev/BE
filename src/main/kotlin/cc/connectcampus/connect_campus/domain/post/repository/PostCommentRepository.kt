@@ -8,6 +8,6 @@ import java.util.*
 
 @Repository
 interface PostCommentRepository : JpaRepository<PostComment, Long> {
-    fun findById(id: UUID?) : PostComment?
-    fun findAllByPost(post: Post) : MutableList<PostComment>
+    fun findById(id: UUID?): PostComment?
+    fun findAllByPost(post: Post): MutableList<PostComment>
 }

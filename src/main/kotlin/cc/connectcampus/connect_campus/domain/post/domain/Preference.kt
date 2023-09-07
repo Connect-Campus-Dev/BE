@@ -7,18 +7,18 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
-class Preference (
+class Preference(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID?= null,
+    val id: UUID? = null,
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    val post: Post?= null,
+    val post: Post? = null,
 
     @ManyToOne
     @JoinColumn(name = "comment_id")
-    val comment: PostComment?= null,
+    val comment: PostComment? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
@@ -26,5 +26,5 @@ class Preference (
 
     @CreationTimestamp
     @Column(name = "created_at")
-    val createdAt: LocalDateTime? = LocalDateTime.now(),
+    val createdAt: LocalDateTime? = null,
 )

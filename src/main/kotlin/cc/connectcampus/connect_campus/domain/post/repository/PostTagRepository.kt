@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface PostTagRepository: JpaRepository<PostTag, Long> {
+interface PostTagRepository : JpaRepository<PostTag, Long> {
     fun findByTagName(tagName: String): PostTag?
     fun findById(id: UUID): PostTag?
 }

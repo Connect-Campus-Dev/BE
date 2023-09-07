@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 @Entity
-class PostTag (
+class PostTag(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
@@ -18,13 +18,13 @@ class PostTag (
     @Column(name = "created_at")
     val createdAt: LocalDateTime? = null,
 
-){
-    companion object{
+    ) {
+    companion object {
         fun fixture(
-                tagName: String = "testTag",
-        ): PostTag{
+            tagName: String = "testTag",
+        ): PostTag {
             return PostTag(
-                    tagName = tagName,
+                tagName = tagName,
             )
         }
     }

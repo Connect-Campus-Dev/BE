@@ -8,48 +8,48 @@ import java.time.LocalDateTime
 import java.util.*
 
 @Entity
-class PostComment (
-        @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
-        val id: UUID?= null,
+class PostComment(
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    val id: UUID? = null,
 
-        @ManyToOne
-        @JoinColumn(name = "post_id")
-        val post: Post,
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    val post: Post,
 
-        @ManyToOne(cascade = [CascadeType.PERSIST])
-        @JoinColumn(name = "writer_id")
-        val writerId: Member,
+    @ManyToOne
+    @JoinColumn(name = "writer_id")
+    val writer: Member,
 
-        @ManyToOne(cascade = [CascadeType.PERSIST])
-        @JoinColumn(name = "parent_id")
-        val parentId: PostComment?=null,
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    val parent: PostComment? = null,
 
-        @Column(nullable = false)
-        var content: String,
+    @Column(nullable = false)
+    var content: String,
 
-        @OneToMany(mappedBy = "comment", cascade = [CascadeType.REMOVE])
-        val preferences: MutableList<Preference>? = mutableListOf(),
+    @OneToMany(mappedBy = "comment", cascade = [CascadeType.REMOVE])
+    val preferences: MutableList<Preference> = mutableListOf(),
 
-        @CreationTimestamp
-        @Column(name = "created_at")
-        val createdAt: LocalDateTime? = null,
+    @CreationTimestamp
+    @Column(name = "created_at")
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 
-        @UpdateTimestamp
-        @Column(name = "updated_at")
-        var updatedAt: LocalDateTime? = null,
-){
-    companion object{
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    val updatedAt: LocalDateTime = LocalDateTime.now(),
+) {
+    companion object {
         fun fixture(
-                id: UUID? = null,
-                post: Post = Post.fixture(),
-                member: Member = Member.fixture(),
-                parent: PostComment? = null,
-                content: String = "testComment",
-                preferences: MutableList<Preference> = mutableListOf(),
-                createdAt: LocalDateTime = LocalDateTime.now()
-        ): PostComment{
-            return PostComment(id,post,member,parent, content, preferences ,createdAt)
+            id: UUID? = null,
+            post: Post = Post.fixture(),
+            member: Member = Member.fixture(),
+            parent: PostComment? = null,
+            content: String = "testComment",
+            preferences: MutableList<Preference> = mutableListOf(),
+            createdAt: LocalDateTime = LocalDateTime.now()
+        ): PostComment {
+            return PostComment(id, post, member, parent, content, preferences, createdAt)
         }
     }
 }

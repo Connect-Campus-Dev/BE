@@ -32,10 +32,9 @@ class ChatController(
     }
 
     @GetMapping("/chat/{chatId}")
-    fun getChat(@PathVariable chatId: String): List<Message?> {
-        val chatUUID = UUID.fromString(chatId)
+    fun getChat(@PathVariable chatId: UUID): List<Message?> {
         logger.info("Hello~")
-        return chatService.getMessages(chatUUID)
+        return chatService.getMessages(chatId)
     }
 
 

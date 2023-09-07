@@ -12,11 +12,11 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface PostRepository : JpaRepository<Post, Long>, PagingAndSortingRepository<Post, Long>{
+interface PostRepository : JpaRepository<Post, Long>, PagingAndSortingRepository<Post, Long> {
     fun findById(id: UUID?): Post?
     fun save(postUpdateRequest: PostUpdateRequest): UUID
     override fun findAll(pageable: Pageable): Page<Post>
-    fun findAllByTagId(tagId: PostTag, pageable: Pageable): Page<Post>
+    fun findAllByTag(tag: PostTag, pageable: Pageable): Page<Post>
 
     @Query("SELECT p FROM Post p WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword% order by p.createdAt desc")
     fun searchByTitleAndContentContaining(keyword: String, pageable: Pageable): Page<Post>

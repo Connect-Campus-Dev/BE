@@ -38,3 +38,6 @@ out/
 
 ### Local H2 DB ###
 data/
+
+src/main/resources/application-aws.properties
+src/main/resources/application-local.properties

@@ -13,6 +13,7 @@ import cc.connectcampus.connect_campus.domain.post.exception.*
 import cc.connectcampus.connect_campus.domain.post.repository.PostCommentRepository
 import cc.connectcampus.connect_campus.domain.post.repository.PostRepository
 import cc.connectcampus.connect_campus.domain.post.repository.PostTagRepository
+import cc.connectcampus.connect_campus.domain.post.repository.PreferenceRepository
 import cc.connectcampus.connect_campus.domain.univ.service.UnivService
 import cc.connectcampus.connect_campus.global.error.exception.EntityNotFoundException
 import cc.connectcampus.connect_campus.global.error.exception.HandleAccessException
@@ -36,6 +37,7 @@ class PostServiceImpl(
     val univService: UnivService,
     val redisTemplate: RedisTemplate<String, String>,
     val memberRepository: MemberRepository,
+    val preferenceRepository: PreferenceRepository,
 ) {
     @Transactional
     fun createPost(postCreationRequest: PostCreationRequest, memberId: UUID): PostResponse {
@@ -133,23 +135,42 @@ class PostServiceImpl(
 
     @Transactional
     fun updatePost(postId: UUID, postUpdateRequest: PostUpdateRequest, memberId: UUID): PostResponse {
-        val savedPost = postRepository.findById(postId) ?: throw EntityNotFoundException()
-        if (savedPost.writer.id != memberId) throw HandleAccessException()
+        val originPost = postRepository.findById(postId) ?: throw EntityNotFoundException()
+        if (originPost.writer.id != memberId) throw HandleAccessException()
         val postTag = getPostTag(postUpdateRequest.tagName)
 
-        savedPost.title = postUpdateRequest.title
-        savedPost.content = postUpdateRequest.content
-        savedPost.tag = postTag
+        originPost.isDeleted = true
+
+        val newPost = Post(
+            title = postUpdateRequest.title,
+            content = postUpdateRequest.content,
+            tag = postTag,
+            writer = originPost.writer,
+            viewCount = originPost.viewCount,
+            createdAt = originPost.createdAt,
+            updatedAt = LocalDateTime.now(),
+        )
+
+        val updatedPost = postRepository.save(newPost)
+
+        preferenceRepository.findAllByPost(originPost).forEach {
+            it.post = updatedPost
+            updatedPost.preferences.add(it)
+        }
+
+        postCommentRepository.findAllByPost(originPost).forEach {
+            it.post = updatedPost
+        }
 
         return PostResponse(
-            postId = savedPost.id!!,
-            title = savedPost.title,
-            content = savedPost.content,
-            writerSchoolName = univService.getSchoolNameByEmailDomain(savedPost.writer.email),
-            tagName = savedPost.tag.tagName,
-            preferenceCount = savedPost.preferences.size,
-            viewCount = savedPost.viewCount,
-            createdAt = savedPost.updatedAt.toString(),
+            postId = updatedPost.id!!,
+            title = updatedPost.title,
+            content = updatedPost.content,
+            writerSchoolName = univService.getSchoolNameByEmailDomain(updatedPost.writer.email),
+            tagName = updatedPost.tag.tagName,
+            preferenceCount = updatedPost.preferences.size,
+            viewCount = updatedPost.viewCount,
+            createdAt = updatedPost.updatedAt.toString(),
         )
     }
 

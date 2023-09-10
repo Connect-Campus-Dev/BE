@@ -26,15 +26,13 @@ class Post(
     @JoinColumn(name = "writer_id")
     val writer: Member,
 
-    @CreationTimestamp
     @Column(name = "created_at")
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @UpdateTimestamp
     @Column(name = "updated_at")
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 
-    @OneToMany(mappedBy = "post", cascade = [CascadeType.REMOVE])
+    @OneToMany(mappedBy = "post")
     val preferences: MutableList<Preference> = mutableListOf(),
 
     @ColumnDefault("0")

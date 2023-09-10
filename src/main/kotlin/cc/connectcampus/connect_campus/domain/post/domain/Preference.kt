@@ -14,11 +14,11 @@ class Preference(
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    val post: Post? = null,
+    var post: Post? = null,
 
     @ManyToOne
     @JoinColumn(name = "comment_id")
-    val comment: PostComment? = null,
+    var comment: PostComment? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")

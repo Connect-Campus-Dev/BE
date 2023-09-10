@@ -15,7 +15,7 @@ class PostComment(
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    val post: Post,
+    var post: Post,
 
     @ManyToOne
     @JoinColumn(name = "writer_id")
@@ -28,16 +28,17 @@ class PostComment(
     @Column(nullable = false)
     var content: String,
 
-    @OneToMany(mappedBy = "comment", cascade = [CascadeType.REMOVE])
+    @OneToMany(mappedBy = "comment")
     val preferences: MutableList<Preference> = mutableListOf(),
 
-    @CreationTimestamp
     @Column(name = "created_at")
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
-    @UpdateTimestamp
     @Column(name = "updated_at")
     val updatedAt: LocalDateTime = LocalDateTime.now(),
+
+    @Column
+    var isDeleted: Boolean = false,
 ) {
     companion object {
         fun fixture(

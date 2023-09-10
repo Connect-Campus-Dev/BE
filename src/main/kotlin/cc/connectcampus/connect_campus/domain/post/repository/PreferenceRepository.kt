@@ -11,4 +11,7 @@ import org.springframework.stereotype.Repository
 interface PreferenceRepository : JpaRepository<Preference, Long> {
     fun findByPostAndMember(post: Post, member: Member): Preference?
     fun findByCommentAndMember(comment: PostComment, member: Member): Preference?
+    fun findAllByPost(post: Post): MutableList<Preference>
+    fun findAllByComment(comment: PostComment): MutableList<Preference>
+
 }

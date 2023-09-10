@@ -30,7 +30,7 @@ class Post(
     val createdAt: LocalDateTime = LocalDateTime.now(),
 
     @Column(name = "updated_at")
-    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: LocalDateTime? = null,
 
     @OneToMany(mappedBy = "post")
     val preferences: MutableList<Preference> = mutableListOf(),

@@ -4,7 +4,7 @@ import java.util.*
 
 data class PostCommentResponse(
     val commentId: UUID,
-    val content: String,
+    val content: String?,
     val writerNickname: String,
     val preferenceCount: Int,
     val createdAt: String,

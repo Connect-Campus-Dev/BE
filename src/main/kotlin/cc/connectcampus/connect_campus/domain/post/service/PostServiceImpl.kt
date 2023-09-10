@@ -216,7 +216,7 @@ class PostServiceImpl(
         return postTagRepository.findByTagName(tagName) ?: throw PostTagInvalidException()
     }
 
-    fun formatTimeAgo(createdTime: LocalDateTime, updatedTime: LocalDateTime): String {
+    fun formatTimeAgo(createdTime: LocalDateTime, updatedTime: LocalDateTime?): String {
         val now = LocalDateTime.now()
         val duration = Duration.between(createdTime, now)
         val form = when {
@@ -228,7 +228,7 @@ class PostServiceImpl(
             duration.toDays() < 365 -> "${duration.toDays() / 30} 달 전"
             else -> "${duration.toDays() / 365} 년 전"
         }
-        return form + if (createdTime != updatedTime) " (수정됨)" else ""
+        return form + if (updatedTime == null) "" else " (수정됨)"
     }
 
     //댓글 정렬
@@ -245,7 +245,7 @@ class PostServiceImpl(
                 commentResponse = PostCommentResponse(
                     commentId = comment.id!!,
                     writerNickname = "글쓴이",
-                    content = comment.content,
+                    content = if (comment.isDeleted) null else comment.content,
                     preferenceCount = comment.preferences.size,
                     createdAt = formatTimeAgo(comment.createdAt, comment.updatedAt),
                 )
@@ -258,7 +258,7 @@ class PostServiceImpl(
                 commentResponse = PostCommentResponse(
                     commentId = comment.id!!,
                     writerNickname = writerNickname,
-                    content = comment.content,
+                    content = if (comment.isDeleted) null else comment.content,
                     preferenceCount = comment.preferences.size,
                     createdAt = formatTimeAgo(comment.createdAt, comment.updatedAt),
                 )

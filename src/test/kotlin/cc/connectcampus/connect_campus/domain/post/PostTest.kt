@@ -304,7 +304,7 @@ class PostTest(
 
     @Test
     @Transactional
-    fun `post 수정`() {
+    fun `게시글 수정`() {
         // 1. 예상 데이터
         val postCreationRequest = PostCreationRequest(
             title = testPost.title,
@@ -725,6 +725,7 @@ class PostTest(
         assertThat(savedComment.post).isEqualTo(savedPost)
         assertThat(savedComment.writer).isEqualTo(testMember1)
         assertThat(savedComment.content).isEqualTo(postCommentRequest.content)
+        assertThat(savedComment.updatedAt).isNull()
     }
 
     @Test
@@ -765,6 +766,7 @@ class PostTest(
         assertThat(savedComment.content).isEqualTo(postCommentChildRequest.content)
         assertThat(savedComment.post).isEqualTo(savedPost)
         assertThat(savedComment.writer).isEqualTo(testMember1)
+        assertThat(savedComment.updatedAt).isNull()
     }
 
     @Test
@@ -781,11 +783,9 @@ class PostTest(
             content = "testComment",
             parent = null,
         )
-        val curTime = LocalDateTime.now()
         val createComment = postCommentService.createPostComment(
             postId = createPost.postId, memberId = testMember1.id!!, postCommentRequest
         )
-        val beforeComment = postCommentRepository.findById(createComment.commentId) ?: throw EntityNotFoundException()
         val updateCommentRequest = PostCommentUpdateRequest(
             content = "updateComment",
         )
@@ -793,15 +793,17 @@ class PostTest(
             postCommentService.updatePostComment(createComment.commentId, testMember1.id!!, updateCommentRequest)
         // 2. 실제 데이터
         val savedComment = postCommentRepository.findById(updateComment.commentId) ?: throw EntityNotFoundException()
+        val beforeComment = postCommentRepository.findById(createComment.commentId) ?: throw EntityNotFoundException()
         val savedPost = postRepository.findById(createPost.postId) ?: throw EntityNotFoundException()
         // 3. 비교 및 검증
-        assertThat(savedComment.id).isEqualTo(beforeComment.id)
+        assertThat(savedComment.id).isNotEqualTo(createComment.commentId)
         assertThat(savedComment.post).isEqualTo(savedPost)
         assertThat(savedComment.content).isEqualTo(updateCommentRequest.content)
         assertThat(savedComment.writer).isEqualTo(testMember1)
-        assertThat(savedComment.parent).isEqualTo(beforeComment.parent)
-        assertThat(savedComment.createdAt).isEqualTo(beforeComment.createdAt)
-        assertThat(savedComment.updatedAt).isNotEqualTo(curTime)
+        assertThat(savedComment.createdAt).isEqualTo(createComment.createdAt)
+        assertThat(savedComment.updatedAt).isNotEqualTo(savedComment.createdAt)
+        assertThat(savedComment.updatedAt).isNotNull()
+        assertThat(beforeComment.isDeleted).isTrue()
     }
 
     @Test
@@ -866,18 +868,21 @@ class PostTest(
         val updateCommentRequest = PostCommentUpdateRequest(
             content = "updateComment",
         )
-        postCommentService.updatePostComment(createCommentChild.commentId, testMember1.id!!, updateCommentRequest)
+        val updateComment = postCommentService.updatePostComment(createCommentChild.commentId, testMember1.id!!, updateCommentRequest)
         // 2. 실제 데이터
         val savedCommentChild =
-            postCommentRepository.findById(createCommentChild.commentId) ?: throw EntityNotFoundException()
+            postCommentRepository.findById(updateComment.commentId) ?: throw EntityNotFoundException()
         val savedPost = postRepository.findById(createPost.postId) ?: throw EntityNotFoundException()
+        val beforeComment = postCommentRepository.findById(createCommentChild.commentId) ?: throw EntityNotFoundException()
         // 3. 비교 및 검증
-        assertThat(savedCommentChild.id).isEqualTo(createCommentChild.commentId)
+        assertThat(savedCommentChild.id).isNotEqualTo(createCommentChild.commentId)
         assertThat(savedCommentChild.post).isEqualTo(savedPost)
         assertThat(savedCommentChild.content).isEqualTo(updateCommentRequest.content)
         assertThat(savedCommentChild.writer).isEqualTo(testMember1)
         assertThat(savedCommentChild.parent).isEqualTo(parentComment)
         assertThat(savedCommentChild.updatedAt).isNotEqualTo(savedCommentChild.createdAt)
+        assertThat(beforeComment.isDeleted).isTrue()
+        assertThat(savedCommentChild.updatedAt).isNotNull()
     }
 
     @Test
@@ -900,8 +905,10 @@ class PostTest(
             postCommentRequest
         )
         val deleteComment = postCommentService.deletePostComment(saveComment.commentId, testMember1.id!!)
-        // 2. 비교 및 검증
-        assertThat(postCommentRepository.findById(deleteComment.commentId)).isNull()
+        // 2. 실제 데이터
+        val savedComment = postCommentRepository.findById(deleteComment.commentId) ?: throw EntityNotFoundException()
+        // 3. 비교 및 검증
+        assertThat(savedComment.isDeleted).isTrue()
     }
 
     @Test
@@ -960,13 +967,15 @@ class PostTest(
             postCommentChildRequest
         )
         val deleteCommentChild = postCommentService.deletePostComment(saveCommentChild.commentId, testMember1.id!!)
-        // 2. 비교 및 검증
-        assertThat(postCommentRepository.findById(deleteCommentChild.commentId)).isNull()
+        // 2. 실제 데이터
+        val savedCommentChild = postCommentRepository.findById(deleteCommentChild.commentId) ?: throw EntityNotFoundException()
+        // 3. 비교 및 검증
+        assertThat(savedCommentChild.isDeleted).isTrue()
     }
 
     @Test
     @Transactional
-    fun `댓글 생성 후 post 상세 페이지 불러오기`() {
+    fun `댓글 생성 후 게시글 상세 페이지 불러오기`() {
         // 1. 예상 데이터
         val postCreation = Post(
             title = "newPostTitle",
@@ -1020,10 +1029,118 @@ class PostTest(
         assertThat(getPostSingle.commentList[0].childComments[0].writerNickname).isEqualTo("글쓴이")
         assertThat(getPostSingle.commentList[0].childComments[1].writerNickname).isEqualTo("익명2")
     }
-
     @Test
     @Transactional
-    fun `tag별 게시글 list 가져오기`() {
+    fun `댓글 수정 후 게시글 상세페이지 불러오기`(){
+        // 1. 예상 데이터
+        val postCreation = Post(
+            title = "newPostTitle",
+            content = "newPostContent",
+            tag = postTag,
+            writer = testMember1,
+            viewCount = 0,
+        )
+        val createPost = postRepository.save(postCreation)
+        val postCommentRequest = PostCommentCreationRequest(
+            content = "testComment"
+        )
+        val postComment1 = postCommentService.createPostComment(
+            postId = createPost.id!!,
+            memberId = testMember1.id!!,
+            postCommentRequest
+        )
+        postCommentService.createPostComment(postId = createPost.id!!, memberId = testMember2.id!!, postCommentRequest)
+        postCommentService.createPostComment(postId = createPost.id!!, memberId = testMember1.id!!, postCommentRequest)
+
+        val postCommentChildRequest = PostCommentCreationRequest(
+            content = "testCommentChild",
+            parent = postComment1.commentId
+        )
+        postCommentService.createPostComment(
+            postId = createPost.id!!,
+            memberId = testMember1.id!!,
+            postCommentChildRequest
+        )
+        postCommentService.createPostComment(
+            postId = createPost.id!!,
+            memberId = testMember3.id!!,
+            postCommentChildRequest
+        )
+
+        val updateCommentRequest = PostCommentUpdateRequest(
+            content = "updateComment",
+        )
+        postCommentService.updatePostComment(postComment1.commentId, testMember1.id!!, updateCommentRequest)
+
+        postCommentService.createPostComment(postId = createPost.id!!, memberId = testMember3.id!!, postCommentRequest)
+        // 2. 실제 데이터
+        val getPostSingle = postService.getPostDetail(createPost.id!!, testMember1.id!!)
+        // 3. 비교 및 검증
+        assertThat(getPostSingle.title).isEqualTo(postCreation.title)
+        assertThat(getPostSingle.content).isEqualTo(postCreation.content)
+        assertThat(getPostSingle.tagName).isEqualTo(postCreation.tag.tagName)
+        assertThat(getPostSingle.writerSchoolName).isEqualTo(univService.getSchoolNameByEmailDomain(testMember1.email))
+        assertThat(getPostSingle.commentCount).isEqualTo(7)
+        assertThat(getPostSingle.viewCount).isEqualTo(1)
+        assertThat(getPostSingle.commentList[1].createdAt).contains("수정됨")
+        assertThat(getPostSingle.commentList[0].content).isNull()
+        assertThat(getPostSingle.commentList[1].content).isEqualTo("updateComment")
+    }
+    @Test
+    @Transactional
+    fun `댓글 삭제 후 게시글 상세페이지 불러오기`(){
+        // 1. 예상 데이터
+        val postCreation = Post(
+            title = "newPostTitle",
+            content = "newPostContent",
+            tag = postTag,
+            writer = testMember1,
+            viewCount = 0,
+        )
+        val createPost = postRepository.save(postCreation)
+        val postCommentRequest = PostCommentCreationRequest(
+            content = "testComment"
+        )
+        val postComment1 = postCommentService.createPostComment(
+            postId = createPost.id!!,
+            memberId = testMember1.id!!,
+            postCommentRequest
+        )
+        postCommentService.createPostComment(postId = createPost.id!!, memberId = testMember2.id!!, postCommentRequest)
+        postCommentService.createPostComment(postId = createPost.id!!, memberId = testMember1.id!!, postCommentRequest)
+
+        val postCommentChildRequest = PostCommentCreationRequest(
+            content = "testCommentChild",
+            parent = postComment1.commentId
+        )
+        postCommentService.createPostComment(
+            postId = createPost.id!!,
+            memberId = testMember1.id!!,
+            postCommentChildRequest
+        )
+        postCommentService.createPostComment(
+            postId = createPost.id!!,
+            memberId = testMember3.id!!,
+            postCommentChildRequest
+        )
+
+        postCommentService.deletePostComment(postComment1.commentId, testMember1.id!!)
+
+        postCommentService.createPostComment(postId = createPost.id!!, memberId = testMember3.id!!, postCommentRequest)
+        // 2. 실제 데이터
+        val getPostSingle = postService.getPostDetail(createPost.id!!, testMember1.id!!)
+        // 3. 비교 및 검증
+        assertThat(getPostSingle.title).isEqualTo(postCreation.title)
+        assertThat(getPostSingle.content).isEqualTo(postCreation.content)
+        assertThat(getPostSingle.tagName).isEqualTo(postCreation.tag.tagName)
+        assertThat(getPostSingle.writerSchoolName).isEqualTo(univService.getSchoolNameByEmailDomain(testMember1.email))
+        assertThat(getPostSingle.commentCount).isEqualTo(6)
+        assertThat(getPostSingle.viewCount).isEqualTo(1)
+        assertThat(getPostSingle.commentList[0].content).isNull()
+    }
+    @Test
+    @Transactional
+    fun `tag별 게시글 목록 가져오기`() {
         // 1. 예상 데이터
         val postTagCreation = PostTag(
             tagName = "diffTag",

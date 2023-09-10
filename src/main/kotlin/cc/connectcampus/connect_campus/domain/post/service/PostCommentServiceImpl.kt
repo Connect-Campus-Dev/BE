@@ -7,10 +7,13 @@ import cc.connectcampus.connect_campus.domain.post.dto.request.PostCommentUpdate
 import cc.connectcampus.connect_campus.domain.post.dto.response.PostCommentResponse
 import cc.connectcampus.connect_campus.domain.post.repository.PostCommentRepository
 import cc.connectcampus.connect_campus.domain.post.repository.PostRepository
+import cc.connectcampus.connect_campus.domain.post.repository.PreferenceRepository
 import cc.connectcampus.connect_campus.global.error.exception.EntityNotFoundException
 import cc.connectcampus.connect_campus.global.error.exception.HandleAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 import java.util.UUID
 
 @Service
@@ -18,7 +21,8 @@ class PostCommentServiceImpl(
     val postCommentRepository: PostCommentRepository,
     val postRepository: PostRepository,
     val memberRepository: MemberRepository,
-){
+    val preferenceRepository: PreferenceRepository,
+) {
     @Transactional
     fun createPostComment(
         postId: UUID,
@@ -28,13 +32,14 @@ class PostCommentServiceImpl(
         val savedPost = postRepository.findById(postId) ?: throw EntityNotFoundException()
         val savedMember = memberRepository.findById(memberId) ?: throw EntityNotFoundException()
 
-        val parentComment : PostComment? = postCommentRepository.findById(postCommentCreationRequest.parent)
+        val parentComment: PostComment? = postCommentRepository.findById(postCommentCreationRequest.parent)
 
         val newPostComment = PostComment(
             post = savedPost,
             writer = savedMember,
             content = postCommentCreationRequest.content,
             parent = parentComment,
+            createdAt = LocalDateTime.now(),
         )
 
         val savedComment = postCommentRepository.save(newPostComment)
@@ -54,20 +59,33 @@ class PostCommentServiceImpl(
         memberId: UUID,
         postCommentUpdateRequest: PostCommentUpdateRequest
     ): PostCommentResponse {
+        val originComment = postCommentRepository.findById(commentId) ?: throw EntityNotFoundException()
+        if (originComment.writer.id != memberId) throw HandleAccessException()
 
-        val savedComment = postCommentRepository.findById(commentId) ?: throw EntityNotFoundException()
-        val savedMember = memberRepository.findById(memberId) ?: throw EntityNotFoundException()
+        originComment.isDeleted = true
 
-        if (savedMember != savedComment.writer) throw HandleAccessException()
+        val newComment = PostComment(
+            post = originComment.post,
+            writer = originComment.writer,
+            content = postCommentUpdateRequest.content,
+            parent = originComment.parent,
+            createdAt = originComment.createdAt,
+            updatedAt = LocalDateTime.now(),
+        )
 
-        savedComment.content = postCommentUpdateRequest.content
+        val updatePost = postCommentRepository.save(newComment)
+
+        preferenceRepository.findAllByComment(originComment).forEach {
+            it.comment = updatePost
+            updatePost.preferences.add(it)
+        }
 
         return PostCommentResponse(
-            commentId = savedComment.id!!,
-            content = savedComment.content,
+            commentId = updatePost.id!!,
+            content = updatePost.content,
             writerNickname = "익명",
-            createdAt = savedComment.updatedAt.toString(),
-            preferenceCount = savedComment.preferences.size,
+            createdAt = updatePost.updatedAt.toString(),
+            preferenceCount = updatePost.preferences.size,
         )
     }
 
@@ -76,11 +94,9 @@ class PostCommentServiceImpl(
 
         val savedComment = postCommentRepository.findById(commentId) ?: throw EntityNotFoundException()
 
-        val savedMember = memberRepository.findById(memberId) ?: throw EntityNotFoundException()
+        if (savedComment.writer.id != memberId) throw HandleAccessException()
 
-        if (savedMember != savedComment.writer) throw HandleAccessException()
-
-        postCommentRepository.delete(savedComment)
+        savedComment.isDeleted = true
 
         return PostCommentResponse(
             commentId = savedComment.id!!,

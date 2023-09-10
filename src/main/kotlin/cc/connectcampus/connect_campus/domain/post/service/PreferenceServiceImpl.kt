@@ -16,7 +16,7 @@ class PreferenceServiceImpl(
     val preferenceRepository: PreferenceRepository,
     val memberRepository: MemberRepository,
     val postCommentRepository: PostCommentRepository,
-){
+) {
     @Transactional
     fun preferPost(postId: UUID, memberId: UUID): Int {
         val savedPost = postRepository.findById(postId) ?: throw EntityNotFoundException()

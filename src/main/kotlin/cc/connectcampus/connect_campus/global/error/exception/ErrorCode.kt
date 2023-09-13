@@ -60,4 +60,6 @@ enum class ErrorCode(
     POST_CONTENT_VALUE_INVALID(400, "P005", "부적절한 내용이에요."),
     POST_COMMENT_LENGTH_INVALID(400, "P006","댓글 내용은 2글자 이상이여야 해요."),
 
+    // Love
+    LOVE_PROFILE_NOT_FOUND(400, "L001", "존재하지 않는 프로필이에요."),
 }

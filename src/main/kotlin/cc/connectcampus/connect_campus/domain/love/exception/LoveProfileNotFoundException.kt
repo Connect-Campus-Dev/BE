@@ -1,0 +1,6 @@
+package cc.connectcampus.connect_campus.domain.love.exception
+
+import cc.connectcampus.connect_campus.global.error.exception.EntityNotFoundException
+import cc.connectcampus.connect_campus.global.error.exception.ErrorCode
+
+class LoveProfileNotFoundException: EntityNotFoundException(ErrorCode.LOVE_PROFILE_NOT_FOUND)

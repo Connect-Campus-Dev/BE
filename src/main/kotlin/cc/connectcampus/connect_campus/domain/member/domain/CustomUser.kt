@@ -10,4 +10,4 @@ class CustomUser(
     email: String,
     password: String,
     authorities: Collection<GrantedAuthority>,
-    ): User(email, password, authorities)
+) : User(email, password, authorities)

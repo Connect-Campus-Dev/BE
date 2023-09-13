@@ -4,6 +4,7 @@ import cc.connectcampus.connect_campus.domain.chat.domain.ChatMember
 import cc.connectcampus.connect_campus.domain.crew.domain.CrewMember
 import cc.connectcampus.connect_campus.domain.member.domain.Gender.*
 import cc.connectcampus.connect_campus.domain.model.Email
+import cc.connectcampus.connect_campus.domain.univ.domain.Univ
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import java.time.LocalDateTime
@@ -31,21 +32,18 @@ class Member(
     val gender: Gender,
 
     @CreationTimestamp
-    @Column(name = "created_at",  updatable = false)
+    @Column(name = "created_at", updatable = false)
     val createdAt: LocalDateTime? = null,
 
     @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL])
     val joinedCrew: MutableList<CrewMember> = mutableListOf(),
-
-//    @OneToMany(mappedBy = "member", cascade = [CascadeType.ALL])
-//    val joinedChat: MutableList<ChatMember> = mutableListOf(),
 
     @Enumerated(EnumType.STRING)
     val role: Role,
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    val id: UUID ?= null,
+    val id: UUID? = null,
 
     ) {
     companion object {
@@ -58,7 +56,6 @@ class Member(
             gender: Gender = MALE,
             createdAt: LocalDateTime = LocalDateTime.now(),
             joinedCrew: MutableList<CrewMember> = mutableListOf(),
-            joinedChat: MutableList<ChatMember> = mutableListOf(),
             role: Role = Role.MEMBER,
             id: UUID? = null,
         ): Member {

@@ -4,6 +4,7 @@ import cc.connectcampus.connect_campus.domain.member.domain.Gender
 import cc.connectcampus.connect_campus.domain.member.domain.Member
 import cc.connectcampus.connect_campus.domain.member.domain.Role
 import cc.connectcampus.connect_campus.domain.model.Email
+import cc.connectcampus.connect_campus.domain.univ.domain.Univ
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size

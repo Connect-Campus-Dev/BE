@@ -1,15 +1,16 @@
 package cc.connectcampus.connect_campus.domain.crew.service
 
 import cc.connectcampus.connect_campus.domain.crew.domain.Crew
+import cc.connectcampus.connect_campus.domain.crew.domain.CrewJoinRequest
 import cc.connectcampus.connect_campus.domain.crew.domain.CrewMember
 import cc.connectcampus.connect_campus.domain.crew.domain.CrewTag
 import cc.connectcampus.connect_campus.domain.crew.dto.request.CrewCreationRequest
 import cc.connectcampus.connect_campus.domain.crew.exception.*
+import cc.connectcampus.connect_campus.domain.crew.repository.CrewJoinRequestRepository
 import cc.connectcampus.connect_campus.domain.crew.repository.CrewMemberRepository
 import cc.connectcampus.connect_campus.domain.crew.repository.CrewRepository
 import cc.connectcampus.connect_campus.domain.crew.repository.CrewTagRepository
 import cc.connectcampus.connect_campus.domain.member.domain.Member
-import cc.connectcampus.connect_campus.domain.member.exception.MemberNotFoundException
 import cc.connectcampus.connect_campus.domain.member.repository.MemberRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,14 +22,15 @@ class CrewServiceV0(
     val crewTagRepository: CrewTagRepository,
     val crewMemberRepository: CrewMemberRepository,
     val memberRepository: MemberRepository,
+    val crewJoinRequestRepository: CrewJoinRequestRepository,
 ): CrewService{
     @Transactional
-    override fun create(crewCreationRequest: CrewCreationRequest): Crew {
+    override fun create(crewCreationRequest: CrewCreationRequest, adminId: UUID): Crew {
         // Crew Name Duplicate Check
         if(crewRepository.existsByName(crewCreationRequest.name)) throw CrewNameDuplicateException()
 
-        val requestedAdmin: Member = memberRepository.findById(crewCreationRequest.adminId)
-            ?: throw MemberNotFoundException()
+        val requestedAdmin: Member = memberRepository.findById(adminId)!!
+
         val creationCrew = Crew(
             name = crewCreationRequest.name,
             description = crewCreationRequest.description,
@@ -37,28 +39,34 @@ class CrewServiceV0(
         )
         val createdCrew = crewRepository.save(creationCrew)
 
-        join(createdCrew.id!!, requestedAdmin.id!!)
         return createdCrew
     }
 
     @Transactional
-    override fun join(crewId: UUID, memberId: UUID): Crew {
+    override fun joinRequest(crewId: UUID, memberId: UUID): Crew {
         // Crew Existence Check
-        if(crewRepository.notExistsById(crewId)) throw CrewNotFoundException()
+        val crew = crewRepository.findById(crewId)?: throw CrewNotFoundException()
 
-        val crew = crewRepository.findById(crewId)
-        val member = memberRepository.findById(memberId)
-            ?: throw MemberNotFoundException()
+        // Request Existence Check
+        if(crewJoinRequestRepository.existsByCrewIdAndMemberId(crew.id!!, memberId)) throw CrewJoinFoundException()
 
         // Member Joined Crew Check
-        if(crewMemberRepository.existsByCrewIdAndMemberId(crewId,memberId)) throw CrewMemberJoinedException()
+        if(crewMemberRepository.existsByCrewIdAndMemberId(crewId, memberId)) throw CrewMemberJoinedException()
 
-        val crewMember = crewMemberRepository.save(CrewMember(crew = crew, member = member))
+        val member = memberRepository.findById(memberId)!!
+        crewJoinRequestRepository.save(CrewJoinRequest(crew = crew, member = member))
+        return crew
+    }
 
+    @Transactional
+    override fun join(crewId: UUID, memberId: UUID): Boolean{
+        val member = memberRepository.findById(memberId)!!
+        val crew = crewRepository.findById(crewId)!!
+        val crewMember = CrewMember(crew = crew, member = member)
+        crewMemberRepository.save(crewMember)
         crew.members.add(crewMember)
         member.joinedCrew.add(crewMember)
-
-        return crew
+        return true
     }
 
     fun TagToEntity(tags: List<String>): List<CrewTag>{

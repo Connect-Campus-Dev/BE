@@ -41,6 +41,8 @@ enum class ErrorCode(
     CREW_TAG_LENGTH_INVALID(400, "CR007", "크루 태그는 2자 이상, 10자 이하여야 해요."),
     CREW_TAG_COUNT_INVALID(400,"CR008", "크루 태그는 1개 이상, 5개 이하여야 해요."),
     CREW_TAG_DUPLICATION(400, "CR009", "크루 태그가 중복되었어요."),
+    CREW_JOIN_REQ_EXISTS(400,"CR010","가입 신청 승인 대기중입니다."),
+    CREW_JOIN_NOT_FOUND(400,"CR011","존재하지 않는 가입 신청입니다."),
   
     // Chat
     CHAT_NOT_FOUND(400, "CH001", "존재하지 않는 채팅방이에요."),
